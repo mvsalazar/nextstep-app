@@ -10,6 +10,8 @@ export type Task = {
   dueTime?: string;
   prime?: PrimeOffset[];
   order: number;
+  date?: string; // YYYY-MM-DD format - optional for templates
+  isTemplate?: boolean; // true for routine templates, false/undefined for daily instances
   updatedAt?: string;
   version?: number;
 };
@@ -22,6 +24,17 @@ export type Routine = {
   color?: string;
   active: boolean;
   order: number;
+  updatedAt?: string;
+  version?: number;
+};
+
+export type DailyRoutine = {
+  id: string;
+  routineId: string;
+  date: string; // YYYY-MM-DD format
+  userId?: string;
+  completed: boolean;
+  completedAt?: string;
   updatedAt?: string;
   version?: number;
 };
@@ -42,10 +55,12 @@ export type Settings = {
   userRole: UserRole;
   adminPin?: string;
   currentRoutineId?: string;
+  currentDate?: string; // YYYY-MM-DD format, defaults to today
 };
 
 export type AppState = {
   routines: Routine[];
+  dailyRoutines: DailyRoutine[];
   tasks: Task[];
   stars: number;
   rewardRules: RewardRule[];

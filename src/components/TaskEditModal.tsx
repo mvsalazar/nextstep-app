@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateTask, useUpdateTask } from '@/hooks/useTasks';
 import { useSettings } from '@/hooks/useSettings';
-import { useUiStore } from '@/store/ui';
+// import { useUiStore } from '@/store/ui';
 import type { Task, PrimeOffset } from '@/types';
 
 const TASK_EMOJIS = [
@@ -40,7 +40,7 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
   const currentRoutineId = settings?.currentRoutineId;
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
-  const { selectedTaskId } = useUiStore();
+  // const { selectedTaskId } = useUiStore(); // TODO: Use for task selection
 
   const isEditing = !!task;
   const isParentMode = settings?.userRole === 'parent' || settings?.userRole === 'guardian';

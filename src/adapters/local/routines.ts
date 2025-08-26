@@ -1,17 +1,20 @@
 import type { Routine } from '@/types';
 import { updateAppState, loadAppState } from './storage';
 
-export const getRoutines = (): Routine[] => {
+export const getRoutines = async (): Promise<Routine[]> => {
+  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
   const state = loadAppState();
   return state.routines.filter(r => r.active).sort((a, b) => a.order - b.order);
 };
 
-export const getRoutineById = (id: string): Routine | null => {
+export const getRoutineById = async (id: string): Promise<Routine | null> => {
+  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
   const state = loadAppState();
   return state.routines.find(r => r.id === id) || null;
 };
 
-export const createRoutine = (routine: Omit<Routine, 'id' | 'updatedAt' | 'version'>): Routine => {
+export const createRoutine = async (routine: Omit<Routine, 'id' | 'updatedAt' | 'version'>): Promise<Routine> => {
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   const newRoutine: Routine = {
     ...routine,
     id: `r${Date.now()}`,
@@ -27,7 +30,8 @@ export const createRoutine = (routine: Omit<Routine, 'id' | 'updatedAt' | 'versi
   return newRoutine;
 };
 
-export const updateRoutine = (id: string, updates: Partial<Routine>): Routine => {
+export const updateRoutine = async (id: string, updates: Partial<Routine>): Promise<Routine> => {
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   let updatedRoutine: Routine | null = null;
 
   updateAppState(state => ({
@@ -53,7 +57,8 @@ export const updateRoutine = (id: string, updates: Partial<Routine>): Routine =>
   return updatedRoutine;
 };
 
-export const deleteRoutine = (id: string): void => {
+export const deleteRoutine = async (id: string): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   updateAppState(state => ({
     ...state,
     routines: state.routines.filter(r => r.id !== id),
@@ -64,7 +69,8 @@ export const deleteRoutine = (id: string): void => {
   }));
 };
 
-export const reorderRoutines = (routineIds: string[]): void => {
+export const reorderRoutines = async (routineIds: string[]): Promise<void> => {
+  await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   updateAppState(state => ({
     ...state,
     routines: state.routines.map(routine => {

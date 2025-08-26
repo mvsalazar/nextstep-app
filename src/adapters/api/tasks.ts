@@ -1,9 +1,37 @@
 import type { Task } from '@/types';
 import { apiClient } from './client';
 
-export const getTasks = async (routineId?: string): Promise<Task[]> => {
-  const url = routineId ? `/v1/tasks?routineId=${routineId}` : '/v1/tasks';
+// Template management endpoints
+export const getTemplates = async (routineId?: string): Promise<Task[]> => {
+  const params = new URLSearchParams();
+  if (routineId) params.append('routineId', routineId);
+  
+  const queryString = params.toString();
+  const url = queryString ? `/v1/templates?${queryString}` : '/v1/templates';
   return apiClient.get<Task[]>(url);
+};
+
+export const createTemplate = async (templateData: Omit<Task, 'id' | 'updatedAt' | 'version'>): Promise<Task> => {
+  return apiClient.post<Task>('/v1/templates', { ...templateData, isTemplate: true });
+};
+
+export const getTasks = async (routineId?: string, date?: string): Promise<Task[]> => {
+  const params = new URLSearchParams();
+  if (routineId) params.append('routineId', routineId);
+  if (date) params.append('date', date);
+  
+  const queryString = params.toString();
+  const url = queryString ? `/v1/tasks?${queryString}` : '/v1/tasks';
+  
+  // For API mode, the backend should handle template generation
+  // Frontend just requests tasks for a date, backend generates from templates if needed
+  return apiClient.get<Task[]>(url);
+};
+
+// Endpoint to generate daily tasks from templates for a specific date
+export const generateDailyTasks = async (date: string, routineIds?: string[]): Promise<Task[]> => {
+  const body = { date, routineIds };
+  return apiClient.post<Task[]>('/v1/tasks/generate-daily', body);
 };
 
 export const createTask = async (taskData: Omit<Task, 'id' | 'updatedAt' | 'version'>): Promise<Task> => {

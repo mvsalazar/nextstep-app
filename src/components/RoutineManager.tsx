@@ -58,7 +58,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
     active: true,
   });
 
-  const { routines, createRoutine, updateRoutine, deleteRoutine, reorderRoutines } = useRoutines();
+  const { routines, createRoutine, updateRoutine, deleteRoutine } = useRoutines();
   const { data: allTasks = [] } = useTasks();
 
   const handleCreateNew = () => {

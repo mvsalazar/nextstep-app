@@ -2,11 +2,12 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { Toaster } from '@/components/ui/sonner';
 import { queryClient } from '@/lib/queryClient';
-import { useSettings } from '@/hooks/useSettings';
+import { useSettings, useCurrentDate } from '@/hooks/useSettings';
 import { useTasks, useUpdateTask, useTaskProgress, useNextTask } from '@/hooks/useTasks';
 import { useUpdateStars } from '@/hooks/useRewards';
 import { useReminders } from '@/hooks/useReminders';
 import { useUiStore } from '@/store/ui';
+import { useState, useEffect } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { ProgressBar } from '@/components/ProgressBar';
 import { NextUp } from '@/components/NextUp';
@@ -17,14 +18,59 @@ import { RewardsPanel } from '@/components/RewardsPanel';
 import { AdminSection } from '@/components/AdminSection';
 import { RoutineManager } from '@/components/RoutineManager';
 import { TaskEditModal } from '@/components/TaskEditModal';
+import { DateNavigation } from '@/components/DateNavigation';
+import { RoutineSelector } from '@/components/RoutineSelector';
 import { cn } from '@/lib/utils';
 
 function AppContent() {
   const { data: settings } = useSettings();
-  const currentRoutineId = settings?.currentRoutineId;
-  const { data: tasks = [] } = useTasks(currentRoutineId);
-  const progress = useTaskProgress(currentRoutineId);
-  const nextTask = useNextTask(currentRoutineId);
+  const { currentDate, setCurrentDate } = useCurrentDate();
+  
+  // Smart routine selection based on time of day
+  const getSmartRoutineId = () => {
+    const now = new Date();
+    const hour = now.getHours();
+    
+    // Morning routine: 5 AM - 11 AM
+    if (hour >= 5 && hour < 11) {
+      return 'r1'; // Morning Routine
+    }
+    // After school routine: 2 PM - 6 PM  
+    else if (hour >= 14 && hour < 18) {
+      return 'r2'; // After School
+    }
+    // Bedtime routine: 7 PM - 10 PM
+    else if (hour >= 19 && hour <= 22) {
+      return 'r3'; // Bedtime Routine
+    }
+    // Default to morning routine
+    else {
+      return 'r1';
+    }
+  };
+  
+  const smartRoutineId = getSmartRoutineId();
+  
+  // State for current routine (can be overridden by user)
+  const [currentRoutineId, setCurrentRoutineId] = useState<string>(smartRoutineId);
+  const [isSmartSelected, setIsSmartSelected] = useState(true);
+  
+  // Update routine when smart selection changes (e.g., time passes)
+  useEffect(() => {
+    if (isSmartSelected) {
+      setCurrentRoutineId(smartRoutineId);
+    }
+  }, [smartRoutineId, isSmartSelected]);
+  
+  const handleRoutineChange = (routineId: string) => {
+    setCurrentRoutineId(routineId);
+    setIsSmartSelected(routineId === smartRoutineId);
+  };
+  
+  // Get tasks for the current routine and date
+  const { data: tasks = [] } = useTasks(currentRoutineId, currentDate);
+  const progress = useTaskProgress(currentRoutineId, currentDate);
+  const nextTask = useNextTask(currentRoutineId, currentDate);
   const updateTask = useUpdateTask();
   const updateStars = useUpdateStars();
   const { 
@@ -60,6 +106,15 @@ function AppContent() {
   return (
     <div className={cn('min-h-screen', isLowStim && 'low-stim')}>
       <HeaderBar />
+      <DateNavigation 
+        currentDate={currentDate} 
+        onDateChange={setCurrentDate} 
+      />
+      <RoutineSelector 
+        currentRoutineId={currentRoutineId}
+        onRoutineChange={handleRoutineChange}
+        smartSelected={isSmartSelected}
+      />
       
       <main className="max-w-md mx-auto px-4 py-6 space-y-6">
         <ProgressBar progress={progress.progress} />

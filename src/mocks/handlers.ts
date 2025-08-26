@@ -92,14 +92,100 @@ export const handlers = [
     return HttpResponse.json({ success: true });
   }),
 
-  // Tasks endpoints
+  // Template endpoints
+  http.get('/api/v1/templates', ({ request }) => {
+    const url = new URL(request.url);
+    const routineId = url.searchParams.get('routineId');
+    let templates = mockTasks.filter(task => task.isTemplate);
+    if (routineId) {
+      templates = templates.filter(task => task.routineId === routineId);
+    }
+    return HttpResponse.json(templates.sort((a, b) => a.order - b.order));
+  }),
+
+  http.post('/api/v1/templates', async ({ request }) => {
+    const templateData = await request.json() as Omit<Task, 'id' | 'updatedAt' | 'version'>;
+    const routineTemplates = mockTasks.filter(t => t.routineId === templateData.routineId && t.isTemplate);
+    const maxOrder = routineTemplates.length > 0 ? Math.max(...routineTemplates.map(t => t.order)) : 0;
+    
+    const newTemplate: Task = {
+      ...templateData,
+      id: `template_${Date.now()}`,
+      order: maxOrder + 1,
+      isTemplate: true,
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    };
+    mockTasks.push(newTemplate);
+    return HttpResponse.json(newTemplate, { status: 201 });
+  }),
+
+  // Tasks endpoints (with date-based generation)
   http.get('/api/v1/tasks', ({ request }) => {
     const url = new URL(request.url);
     const routineId = url.searchParams.get('routineId');
-    let tasks = routineId 
-      ? mockTasks.filter(task => task.routineId === routineId)
-      : mockTasks;
+    const date = url.searchParams.get('date');
+    
+    // If date is provided, ensure daily tasks exist (simulate backend logic)
+    if (date) {
+      const existingDailyTasks = mockTasks.filter(task => 
+        !task.isTemplate && task.date === date
+      );
+      
+      if (existingDailyTasks.length === 0) {
+        // Generate daily tasks from templates
+        const templates = mockTasks.filter(task => task.isTemplate);
+        const dailyTasks = templates.map(template => ({
+          ...template,
+          id: `${template.id}_${date}`,
+          date,
+          done: false,
+          isTemplate: false,
+          updatedAt: new Date().toISOString(),
+          version: 1,
+        }));
+        mockTasks.push(...dailyTasks);
+      }
+    }
+    
+    let tasks = mockTasks;
+    
+    // Filter by date (only non-template tasks)
+    if (date) {
+      tasks = tasks.filter(task => !task.isTemplate && task.date === date);
+    } else {
+      // If no date, return templates for management
+      tasks = tasks.filter(task => task.isTemplate);
+    }
+    
+    // Filter by routine
+    if (routineId) {
+      tasks = tasks.filter(task => task.routineId === routineId);
+    }
+    
     return HttpResponse.json(tasks.sort((a, b) => a.order - b.order));
+  }),
+
+  http.post('/api/v1/tasks/generate-daily', async ({ request }) => {
+    const { date, routineIds } = await request.json() as { date: string; routineIds?: string[] };
+    
+    let templates = mockTasks.filter(task => task.isTemplate);
+    if (routineIds) {
+      templates = templates.filter(task => routineIds.includes(task.routineId));
+    }
+    
+    const dailyTasks = templates.map(template => ({
+      ...template,
+      id: `${template.id}_${date}`,
+      date,
+      done: false,
+      isTemplate: false,
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    }));
+    
+    mockTasks.push(...dailyTasks);
+    return HttpResponse.json(dailyTasks, { status: 201 });
   }),
 
   http.post('/api/v1/tasks', async ({ request }) => {

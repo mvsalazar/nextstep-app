@@ -4,7 +4,6 @@ import {
   Shield, 
   Plus, 
   Edit3, 
-  Trash2, 
   Eye, 
   EyeOff,
   Settings,

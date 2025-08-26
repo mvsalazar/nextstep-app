@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react'; // Unused in this simple component
 
 function SimpleApp() {
   return (

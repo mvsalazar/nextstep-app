@@ -1,34 +1,30 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRoutines } from '@/hooks/useRoutines';
-import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
-import { useUiStore } from '@/store/ui';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-export const RoutineSelector = () => {
+interface RoutineSelectorProps {
+  currentRoutineId: string;
+  onRoutineChange: (routineId: string) => void;
+  smartSelected?: boolean; // indicates if this was auto-selected
+}
+
+export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelected = false }: RoutineSelectorProps) => {
   const { routines, isLoading } = useRoutines();
-  const { data: settings } = useSettings();
-  const updateSettings = useUpdateSettings();
-  const { setRoutineManagerOpen } = useUiStore();
   
-  const currentRoutineId = settings?.currentRoutineId;
   const currentIndex = routines.findIndex(r => r.id === currentRoutineId);
-  
-  const handleRoutineChange = (routineId: string) => {
-    updateSettings.mutate({ currentRoutineId: routineId });
-  };
   
   const goToPrevious = () => {
     if (routines.length === 0) return;
     const prevIndex = currentIndex <= 0 ? routines.length - 1 : currentIndex - 1;
-    handleRoutineChange(routines[prevIndex].id);
+    onRoutineChange(routines[prevIndex].id);
   };
   
   const goToNext = () => {
     if (routines.length === 0) return;
     const nextIndex = currentIndex >= routines.length - 1 ? 0 : currentIndex + 1;
-    handleRoutineChange(routines[nextIndex].id);
+    onRoutineChange(routines[nextIndex].id);
   };
 
   if (isLoading || routines.length === 0) {
@@ -40,7 +36,6 @@ export const RoutineSelector = () => {
   }
 
   const currentRoutine = routines[currentIndex];
-  const isParentMode = settings?.userRole === 'parent' || settings?.userRole === 'guardian';
 
   return (
     <div className="flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-slate-200">
@@ -71,6 +66,11 @@ export const RoutineSelector = () => {
             </span>
             <span className="font-medium text-lg text-slate-800">
               {currentRoutine.name}
+              {smartSelected && (
+                <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                  Auto
+                </span>
+              )}
             </span>
           </motion.div>
         )}
@@ -87,15 +87,7 @@ export const RoutineSelector = () => {
           <ChevronRight className="h-4 w-4" />
         </Button>
         
-        {isParentMode && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2"
-          >
-            <Settings className="h-4 w-4" />
-          </Button>
-        )}
+        {/* Settings button removed for now */}
       </div>
       
       {/* Routine dots indicator */}
@@ -104,7 +96,7 @@ export const RoutineSelector = () => {
           {routines.map((routine, index) => (
             <button
               key={routine.id}
-              onClick={() => handleRoutineChange(routine.id)}
+              onClick={() => onRoutineChange(routine.id)}
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",
                 index === currentIndex 

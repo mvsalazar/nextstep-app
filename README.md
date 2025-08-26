@@ -245,6 +245,48 @@ type Settings = {
 - **PWA Ready** - Can be installed as standalone app
 - **Offline Support** - Works without internet (local mode)
 
+# 🎨 NextStep Design System Palette
+
+## Primary Colors (Brand)
+- **Primary (Main):** `#4D7385` ![#4D7385](https://via.placeholder.com/20/4D7385/FFFFFF?text=+)
+- **Primary Light:** `#5A869C` ![#5A869C](https://via.placeholder.com/20/5A869C/FFFFFF?text=+)
+- **Primary Dark:** `#3F565F` ![#3F565F](https://via.placeholder.com/20/3F565F/FFFFFF?text=+)
+- **On Primary (Text/Icons):** `#FFFFFF` ![#FFFFFF](https://via.placeholder.com/20/FFFFFF/000000?text=+)
+
+---
+
+## Secondary / Accent Colors
+- **Accent (Main):** `#AECDCB` ![#AECDCB](https://via.placeholder.com/20/AECDCB/000000?text=+)
+- **Accent Light:** `#CFE5E3` ![#CFE5E3](https://via.placeholder.com/20/CFE5E3/000000?text=+)
+- **Accent Dark:** `#7DA5A2` ![#7DA5A2](https://via.placeholder.com/20/7DA5A2/000000?text=+)
+- **On Accent:** `#061606` ![#061606](https://via.placeholder.com/20/061606/FFFFFF?text=+)
+
+---
+
+## Neutral Colors
+- **Background:** `#FFFFFF` ![#FFFFFF](https://via.placeholder.com/20/FFFFFF/000000?text=+)
+- **Surface:** `#F6F8F9` ![#F6F8F9](https://via.placeholder.com/20/F6F8F9/000000?text=+)
+- **Border / Divider:** `#D9E1E4` ![#D9E1E4](https://via.placeholder.com/20/D9E1E4/000000?text=+)
+- **Text Primary:** `#061606` ![#061606](https://via.placeholder.com/20/061606/FFFFFF?text=+)
+- **Text Secondary:** `#3F565F` ![#3F565F](https://via.placeholder.com/20/3F565F/FFFFFF?text=+)
+- **Disabled / Inactive:** `#9BA8AD` ![#9BA8AD](https://via.placeholder.com/20/9BA8AD/000000?text=+)
+
+---
+
+## Feedback Colors
+- **Success:** `#7DA5A2` ![#7DA5A2](https://via.placeholder.com/20/7DA5A2/000000?text=+)
+- **Warning:** `#E6B655` ![#E6B655](https://via.placeholder.com/20/E6B655/000000?text=+)
+- **Error:** `#C15A5A` ![#C15A5A](https://via.placeholder.com/20/C15A5A/000000?text=+)
+
+---
+
+## Usage Examples
+- **App header/nav bar** → Primary Dark (`#3F565F`) with white text.  
+- **Primary buttons** → Primary Main (`#4D7385`) with white text.  
+- **Secondary buttons** → Accent Main (`#AECDCB`) with near-black text.  
+- **Background** → White or Surface (`#F6F8F9`).  
+- **Progress/reward stars** → Accent Teal (`#AECDCB`) or Amber (`#E6B655`).
+
 ## 🤝 Contributing
 
 1. Fork the repository

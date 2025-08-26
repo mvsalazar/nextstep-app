@@ -56,3 +56,21 @@ export const useUpdateSettings = () => {
     },
   });
 };
+
+export const useCurrentDate = () => {
+  const { data: settings } = useSettings();
+  const updateSettings = useUpdateSettings();
+  
+  const today = new Date().toISOString().split('T')[0];
+  const currentDate = settings?.currentDate || today;
+  
+  const setCurrentDate = (date: string) => {
+    updateSettings.mutate({ currentDate: date });
+  };
+  
+  return {
+    currentDate,
+    setCurrentDate,
+    isUpdating: updateSettings.isPending,
+  };
+};

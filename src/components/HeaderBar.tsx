@@ -5,8 +5,8 @@ import { useStars } from '@/hooks/useRewards';
 import { useSettings } from '@/hooks/useSettings';
 import { useUiStore } from '@/store/ui';
 import { KeyboardHelp } from './KeyboardHelp';
-import { RoutineSelector } from './RoutineSelector';
 import { cn } from '@/lib/utils';
+import nextstepLogo from '@/assets/next_step_logo.png';
 
 export const HeaderBar = () => {
   const { data: stars = 0 } = useStars();
@@ -21,13 +21,21 @@ export const HeaderBar = () => {
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
       <header className="px-4 py-3">
         <div className="max-w-md mx-auto flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">
-              NextStep
-            </h1>
-            <p className="text-sm text-gray-600">
-              Daily Routine Tracker
-            </p>
+          <div className="flex items-center">
+            <button
+              onClick={() => {
+                // Could add navigation to today or home view here if needed
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-md"
+              aria-label="NextStep Home"
+            >
+              <img 
+                src={nextstepLogo} 
+                alt="NextStep Logo" 
+                className="h-10 w-auto hover:opacity-90 transition-opacity"
+              />
+            </button>
           </div>
 
         <div className="flex items-center gap-2">
@@ -96,9 +104,6 @@ export const HeaderBar = () => {
         </div>
       </div>
     </header>
-    
-    {/* Routine Selector */}
-    <RoutineSelector />
   </div>
   );
 };

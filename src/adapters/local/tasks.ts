@@ -1,12 +1,65 @@
 import type { Task } from '@/types';
 import { loadAppState, updateAppState } from './storage';
 
-export const getTasks = async (routineId?: string): Promise<Task[]> => {
-  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
+// Simplified: generate daily tasks for all routines for a given date
+const generateDailyTasksForDate = (date: string): void => {
   const state = loadAppState();
-  const tasks = routineId 
-    ? state.tasks.filter(task => task.routineId === routineId)
-    : state.tasks;
+  
+  // Check if we already have daily tasks for this date
+  const existingDailyTasks = state.tasks.filter(task => 
+    !task.isTemplate && task.date === date
+  );
+  
+  if (existingDailyTasks.length > 0) {
+    return; // Already have tasks for this date
+  }
+  
+  // Get all template tasks
+  const templates = state.tasks.filter(task => task.isTemplate);
+  
+  // Generate daily instances from all templates
+  const dailyTasks = templates.map(template => ({
+    ...template,
+    id: `${template.id}_${date}`, // Create unique ID for daily instance
+    date,
+    done: false,
+    isTemplate: false,
+    updatedAt: new Date().toISOString(),
+    version: 1,
+  }));
+  
+  if (dailyTasks.length > 0) {
+    updateAppState(currentState => ({
+      ...currentState,
+      tasks: [...currentState.tasks, ...dailyTasks],
+    }));
+  }
+};
+
+export const getTasks = async (routineId?: string, date?: string): Promise<Task[]> => {
+  await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
+  
+  // If we have a date, ensure daily tasks exist for that date
+  if (date) {
+    generateDailyTasksForDate(date);
+  }
+  
+  const currentState = loadAppState();
+  let tasks = currentState.tasks;
+  
+  // When filtering by date, only return non-template tasks
+  if (date) {
+    tasks = tasks.filter(task => !task.isTemplate && task.date === date);
+  } else {
+    // When no date filter, show templates (for editing/management)
+    tasks = tasks.filter(task => task.isTemplate);
+  }
+  
+  // Filter by routineId if provided
+  if (routineId) {
+    tasks = tasks.filter(task => task.routineId === routineId);
+  }
+  
   return tasks.sort((a, b) => a.order - b.order);
 };
 
@@ -14,7 +67,15 @@ export const createTask = async (taskData: Omit<Task, 'id' | 'updatedAt' | 'vers
   await new Promise(resolve => setTimeout(resolve, 100));
   
   const state = loadAppState();
-  const routineTasks = state.tasks.filter(t => t.routineId === taskData.routineId);
+  // For templates, compare only routine and template status
+  // For daily tasks, compare routine, date, and non-template status
+  const routineTasks = state.tasks.filter(t => {
+    if (taskData.isTemplate) {
+      return t.routineId === taskData.routineId && t.isTemplate;
+    } else {
+      return t.routineId === taskData.routineId && t.date === taskData.date && !t.isTemplate;
+    }
+  });
   const maxOrder = routineTasks.length > 0 ? Math.max(...routineTasks.map(t => t.order)) : 0;
   
   const newTask: Task = {

@@ -6,14 +6,14 @@ import { useSettings } from './useSettings';
 import * as localTasks from '@/adapters/local/tasks';
 import * as apiTasks from '@/adapters/api/tasks';
 
-export const useTasks = (routineId?: string) => {
+export const useTasks = (routineId?: string, date?: string) => {
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiTasks : localTasks;
 
   return useQuery({
-    queryKey: ['tasks', routineId],
-    queryFn: () => adapter.getTasks(routineId),
+    queryKey: ['tasks', routineId, date],
+    queryFn: () => adapter.getTasks(routineId, date),
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
@@ -27,7 +27,7 @@ export const useCreateTask = () => {
   return useMutation({
     mutationFn: (taskData: Omit<Task, 'id' | 'updatedAt' | 'version'>) => 
       adapter.createTask(taskData),
-    onSuccess: (newTask) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
     onError: (error) => {
@@ -94,8 +94,8 @@ export const useReorderTasks = () => {
 };
 
 // Computed values
-export const useTaskProgress = (routineId?: string) => {
-  const { data: tasks = [] } = useTasks(routineId);
+export const useTaskProgress = (routineId?: string, date?: string) => {
+  const { data: tasks = [] } = useTasks(routineId, date);
   
   const completedCount = tasks.filter(task => task.done).length;
   const totalCount = tasks.length;
@@ -108,7 +108,7 @@ export const useTaskProgress = (routineId?: string) => {
   };
 };
 
-export const useNextTask = (routineId?: string) => {
-  const { data: tasks = [] } = useTasks(routineId);
+export const useNextTask = (routineId?: string, date?: string) => {
+  const { data: tasks = [] } = useTasks(routineId, date);
   return tasks.find(task => !task.done) || null;
 };

@@ -1,6 +1,6 @@
-import type { Task, RewardRule, Settings, Routine } from '@/types';
+import type { Task, RewardRule, Settings, Routine, DailyRoutine } from '@/types';
 
-export const STORAGE_KEY = 'nextstep:v2';
+export const STORAGE_KEY = 'nextstep:v3'; // Updated to force fresh data with template system
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: 'child',
@@ -8,6 +8,7 @@ export const DEFAULT_SETTINGS: Settings = {
   storageMode: 'local',
   userRole: 'child',
   currentRoutineId: 'r1',
+  // currentDate will be set dynamically in useCurrentDate hook
 };
 
 export const SEED_ROUTINES: Routine[] = [
@@ -43,7 +44,9 @@ export const SEED_ROUTINES: Routine[] = [
   },
 ];
 
-export const SEED_TASKS: Task[] = [
+const today = new Date().toISOString().split('T')[0];
+
+export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't1',
     routineId: 'r1',
@@ -53,6 +56,7 @@ export const SEED_TASKS: Task[] = [
     dueTime: '07:15',
     prime: [10, 5],
     order: 1,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -65,6 +69,7 @@ export const SEED_TASKS: Task[] = [
     dueTime: '07:25',
     prime: [5],
     order: 2,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -76,6 +81,7 @@ export const SEED_TASKS: Task[] = [
     done: false,
     dueTime: '07:45',
     order: 3,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -88,6 +94,7 @@ export const SEED_TASKS: Task[] = [
     dueTime: '08:15',
     prime: [10],
     order: 4,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -98,6 +105,7 @@ export const SEED_TASKS: Task[] = [
     emoji: '🎒',
     done: false,
     order: 1,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -108,6 +116,7 @@ export const SEED_TASKS: Task[] = [
     emoji: '🧼',
     done: false,
     order: 2,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -118,6 +127,7 @@ export const SEED_TASKS: Task[] = [
     emoji: '🍎',
     done: false,
     order: 3,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -129,6 +139,7 @@ export const SEED_TASKS: Task[] = [
     done: false,
     dueTime: '19:30',
     order: 1,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -141,6 +152,7 @@ export const SEED_TASKS: Task[] = [
     dueTime: '19:45',
     prime: [5],
     order: 2,
+    isTemplate: true,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -152,6 +164,34 @@ export const SEED_TASKS: Task[] = [
     done: false,
     dueTime: '20:00',
     order: 3,
+    isTemplate: true,
+    updatedAt: new Date().toISOString(),
+    version: 1,
+  },
+];
+
+export const SEED_DAILY_ROUTINES: DailyRoutine[] = [
+  {
+    id: 'dr1',
+    routineId: 'r1',
+    date: today,
+    completed: false,
+    updatedAt: new Date().toISOString(),
+    version: 1,
+  },
+  {
+    id: 'dr2',
+    routineId: 'r2',
+    date: today,
+    completed: false,
+    updatedAt: new Date().toISOString(),
+    version: 1,
+  },
+  {
+    id: 'dr3',
+    routineId: 'r3',
+    date: today,
+    completed: false,
     updatedAt: new Date().toISOString(),
     version: 1,
   },
@@ -169,6 +209,9 @@ export const SEED_REWARDS: RewardRule[] = [
     cost: 10,
   },
 ];
+
+// Alias for backward compatibility
+export const SEED_TASKS = SEED_TASK_TEMPLATES;
 
 export const STAR_THRESHOLDS = [5, 10, 20, 50];
 

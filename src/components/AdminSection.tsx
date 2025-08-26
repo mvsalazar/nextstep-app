@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
 import { useRoutines } from '@/hooks/useRoutines';
 import { useTasks } from '@/hooks/useTasks';
+import { useUiStore } from '@/store/ui';
 
 interface AdminSectionProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export const AdminSection = ({ isOpen, onClose }: AdminSectionProps) => {
   const updateSettings = useUpdateSettings();
   const { routines } = useRoutines();
   const { data: allTasks = [] } = useTasks();
+  const { setRoutineManagerOpen, setSettingsOpen } = useUiStore();
 
   const handlePinSubmit = () => {
     const adminPin = settings?.adminPin || '1234'; // Default PIN
@@ -59,6 +61,21 @@ export const AdminSection = ({ isOpen, onClose }: AdminSectionProps) => {
       userRole: 'parent',
       mode: 'adult' 
     });
+    handleClose();
+  };
+
+  const handleAddRoutine = () => {
+    setRoutineManagerOpen(true);
+    handleClose();
+  };
+
+  const handleEditRoutines = () => {
+    setRoutineManagerOpen(true);
+    handleClose();
+  };
+
+  const handleAppSettings = () => {
+    setSettingsOpen(true);
     handleClose();
   };
 
@@ -188,17 +205,32 @@ export const AdminSection = ({ isOpen, onClose }: AdminSectionProps) => {
                   </h3>
                   
                   <div className="space-y-2">
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={handleAddRoutine}
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Add New Routine
                     </Button>
                     
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={handleEditRoutines}
+                    >
                       <Edit3 className="h-4 w-4 mr-2" />
                       Edit Routines
                     </Button>
                     
-                    <Button variant="outline" size="sm" className="w-full justify-start">
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="w-full justify-start"
+                      onClick={handleAppSettings}
+                    >
                       <Settings className="h-4 w-4 mr-2" />
                       App Settings
                     </Button>

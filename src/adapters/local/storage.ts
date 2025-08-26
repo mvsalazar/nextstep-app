@@ -16,7 +16,20 @@ export const loadAppState = (): AppState => {
       saveAppState(initialState);
       return initialState;
     }
-    return JSON.parse(stored);
+    
+    const parsedState = JSON.parse(stored);
+    
+    // Migration: ensure settings has userRole field
+    if (!parsedState.settings.userRole) {
+      parsedState.settings = {
+        ...DEFAULT_SETTINGS,
+        ...parsedState.settings,
+        userRole: DEFAULT_SETTINGS.userRole,
+      };
+      saveAppState(parsedState);
+    }
+    
+    return parsedState;
   } catch (error) {
     console.error('Failed to load app state:', error);
     const fallbackState: AppState = {

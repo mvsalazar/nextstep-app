@@ -44,7 +44,14 @@ export const SEED_ROUTINES: Routine[] = [
   },
 ];
 
-const today = new Date().toISOString().split('T')[0];
+// Get today's date in local timezone (YYYY-MM-DD format)
+  const today = (() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  })();
 
 export const SEED_TASK_TEMPLATES: Task[] = [
   {
@@ -217,3 +224,5 @@ export const STAR_THRESHOLDS = [5, 10, 20, 50];
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
 export const DEFAULT_STORAGE_MODE = (import.meta.env.VITE_STORAGE_MODE as 'api' | 'local') || 'local';
+
+export const TODAY = today;

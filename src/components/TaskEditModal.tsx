@@ -24,11 +24,13 @@ const PRIME_OPTIONS: { value: PrimeOffset; label: string }[] = [
 
 interface TaskEditModalProps {
   task?: Task | null;
+  routineId: string;
+  date: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => {
+export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEditModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
     emoji: '🪥',
@@ -37,7 +39,6 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
   });
 
   const { data: settings } = useSettings();
-  const currentRoutineId = settings?.currentRoutineId;
   const createTask = useCreateTask();
   const updateTask = useUpdateTask();
   // const { selectedTaskId } = useUiStore(); // TODO: Use for task selection
@@ -65,15 +66,25 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
   }, [task]);
 
   const handleSave = async () => {
-    if (!formData.title.trim() || !currentRoutineId) return;
+    if (!formData.title.trim() || !routineId) return;
+    
+    // Only allow parents/guardians to create new tasks
+    if (!isEditing && !isParentMode) {
+      console.error('Only parents/guardians can create tasks');
+      return;
+    }
+    
+    console.log('Add task');
 
     const taskData = {
       title: formData.title.trim(),
       emoji: formData.emoji,
       dueTime: formData.dueTime || undefined,
       prime: formData.prime.length > 0 ? formData.prime : undefined,
-      routineId: currentRoutineId,
+      routineId: routineId,
+      date: date,
       done: false,
+      isTemplate: false, // Daily tasks are not templates
       order: 999, // Will be reordered by the system
     };
 
@@ -188,11 +199,20 @@ export const TaskEditModal = ({ task, isOpen, onClose }: TaskEditModalProps) => 
             </div>
           )}
 
+          {/* Non-parent mode message */}
+          {!isEditing && !isParentMode && (
+            <div className="mt-4 p-3 bg-muted rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                Only parents and guardians can create new tasks.
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3 pt-4">
             <Button
               onClick={handleSave}
-              disabled={!canSave || createTask.isPending || updateTask.isPending}
+              disabled={!canSave || createTask.isPending || updateTask.isPending || (!isEditing && !isParentMode)}
               className="flex-1"
             >
               {createTask.isPending || updateTask.isPending ? (

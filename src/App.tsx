@@ -25,7 +25,8 @@ import { cn } from '@/lib/utils';
 function AppContent() {
   const { data: settings } = useSettings();
   const { currentDate, setCurrentDate } = useCurrentDate();
-  
+  const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
+
   // Smart routine selection based on time of day
   const getSmartRoutineId = () => {
     const now = new Date();
@@ -106,10 +107,12 @@ function AppContent() {
   return (
     <div className={cn('min-h-screen', isLowStim && 'low-stim')}>
       <HeaderBar />
-      <DateNavigation 
-        currentDate={currentDate} 
-        onDateChange={setCurrentDate} 
-      />
+      {canAccessAdmin && (
+        <DateNavigation 
+          currentDate={currentDate} 
+          onDateChange={setCurrentDate} 
+        />
+      )}
       <RoutineSelector 
         currentRoutineId={currentRoutineId}
         onRoutineChange={handleRoutineChange}
@@ -143,6 +146,8 @@ function AppContent() {
       />
       <TaskEditModal 
         task={selectedTaskId ? tasks.find(t => t.id === selectedTaskId) : null}
+        routineId={currentRoutineId}
+        date={currentDate}
         isOpen={isTaskEditOpen}
         onClose={() => setTaskEditOpen(false)}
       />

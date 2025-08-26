@@ -29,23 +29,23 @@ export const KeyboardHelp = () => {
         </DialogHeader>
         
         <div className="space-y-4 py-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted-foreground">
             Use these shortcuts to navigate NextStep more efficiently:
           </p>
           
           <div className="space-y-3">
             {shortcuts.map((shortcut, index) => (
               <div key={index} className="flex items-center justify-between">
-                <span className="text-sm text-gray-900">{shortcut.description}</span>
-                <code className="px-2 py-1 bg-gray-100 text-gray-800 text-xs rounded font-mono">
+                <span className="text-sm text-foreground">{shortcut.description}</span>
+                <code className="px-2 py-1 bg-muted text-muted-foreground text-xs rounded font-mono">
                   {shortcut.key}
                 </code>
               </div>
             ))}
           </div>
           
-          <div className="mt-6 p-3 bg-blue-50 rounded-lg">
-            <p className="text-xs text-blue-800">
+          <div className="mt-6 p-3 bg-primary/5 rounded-lg">
+            <p className="text-xs text-primary">
               <strong>Tip:</strong> Keyboard shortcuts work when you're not typing in a text field.
             </p>
           </div>

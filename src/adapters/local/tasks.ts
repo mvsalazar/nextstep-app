@@ -153,3 +153,62 @@ export const reorderTasks = async (routineId: string, taskIds: string[]): Promis
     }),
   }));
 };
+
+// Template management functions for API compatibility
+export const getTemplates = async (routineId?: string): Promise<Task[]> => {
+  await new Promise(resolve => setTimeout(resolve, 50));
+  
+  const currentState = loadAppState();
+  let templates = currentState.tasks.filter(task => task.isTemplate);
+  
+  if (routineId) {
+    templates = templates.filter(task => task.routineId === routineId);
+  }
+  
+  return templates.sort((a, b) => a.order - b.order);
+};
+
+export const createTemplate = async (templateData: Omit<Task, 'id' | 'updatedAt' | 'version'>): Promise<Task> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  const state = loadAppState();
+  const routineTemplates = state.tasks.filter(t => 
+    t.routineId === templateData.routineId && t.isTemplate
+  );
+  const maxOrder = routineTemplates.length > 0 ? Math.max(...routineTemplates.map(t => t.order)) : 0;
+  
+  const newTemplate: Task = {
+    ...templateData,
+    id: `tpl${Date.now()}`,
+    order: maxOrder + 1,
+    isTemplate: true,
+    updatedAt: new Date().toISOString(),
+    version: 1,
+  };
+
+  updateAppState(state => ({
+    ...state,
+    tasks: [...state.tasks, newTemplate],
+  }));
+
+  return newTemplate;
+};
+
+export const generateDailyTasks = async (date: string, routineIds?: string[]): Promise<Task[]> => {
+  await new Promise(resolve => setTimeout(resolve, 100));
+  
+  // This function is handled internally by getTasks in local mode
+  // But we provide it for API compatibility
+  generateDailyTasksForDate(date);
+  
+  const currentState = loadAppState();
+  let dailyTasks = currentState.tasks.filter(task => 
+    !task.isTemplate && task.date === date
+  );
+  
+  if (routineIds && routineIds.length > 0) {
+    dailyTasks = dailyTasks.filter(task => routineIds.includes(task.routineId));
+  }
+  
+  return dailyTasks.sort((a, b) => a.order - b.order);
+};

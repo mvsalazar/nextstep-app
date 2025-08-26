@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { Routine } from '@/types';
-import { useSettings } from './useSettings';
+import type { Routine, Settings } from '@/types';
+import { STORAGE_KEY } from '@/lib/constants';
 
 // Local adapters
 import * as localRoutines from '@/adapters/local/routines';
@@ -11,8 +11,22 @@ const QUERY_KEY = 'routines';
 
 export const useRoutines = () => {
   const queryClient = useQueryClient();
-  const { data: settings } = useSettings();
-  const storageMode = settings?.storageMode || 'local';
+  
+  // Direct storage mode detection to avoid settings API calls
+  const getStorageMode = (): 'api' | 'local' => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.settings?.storageMode || 'local';
+      }
+    } catch (error) {
+      console.warn('Failed to read storage mode from localStorage:', error);
+    }
+    return 'local';
+  };
+  
+  const storageMode = getStorageMode();
   
   const adapter = storageMode === 'api' ? apiRoutines : localRoutines;
 
@@ -84,8 +98,21 @@ export const useRoutines = () => {
 };
 
 export const useRoutine = (id: string) => {
-  const { data: settings } = useSettings();
-  const storageMode = settings?.storageMode || 'local';
+  // Direct storage mode detection to avoid settings API calls
+  const getStorageMode = (): 'api' | 'local' => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        return parsed.settings?.storageMode || 'local';
+      }
+    } catch (error) {
+      console.warn('Failed to read storage mode from localStorage:', error);
+    }
+    return 'local';
+  };
+  
+  const storageMode = getStorageMode();
   const adapter = storageMode === 'api' ? apiRoutines : localRoutines;
 
   return useQuery({

@@ -14,10 +14,10 @@ export const ProgressBar = ({ className, progress: propProgress }: ProgressBarPr
   return (
     <div className={className}>
       <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-gray-700">
+        <span className="text-sm font-medium text-foreground">
           Daily Progress
         </span>
-        <span className="text-sm text-gray-600">
+        <span className="text-sm text-muted-foreground">
           {completedCount} of {totalCount} complete
         </span>
       </div>
@@ -31,7 +31,7 @@ export const ProgressBar = ({ className, progress: propProgress }: ProgressBarPr
           initial={{ width: 0 }}
           animate={{ width: `${progress}%` }}
           transition={{ duration: 0.5, ease: "easeInOut" }}
-          className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-500 to-green-500 rounded-full opacity-80"
+          className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-success rounded-full opacity-80"
           style={{ width: `${progress}%` }}
         />
       </div>
@@ -40,7 +40,7 @@ export const ProgressBar = ({ className, progress: propProgress }: ProgressBarPr
           key={progress}
           initial={{ scale: 0.9, opacity: 0.7 }}
           animate={{ scale: 1, opacity: 1 }}
-          className="text-lg font-bold text-gray-800"
+          className="text-lg font-bold text-foreground"
         >
           {progress}%
         </motion.span>

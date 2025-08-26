@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
+import { TODAY } from "@/lib/constants";
 
 interface DateNavigationProps {
   currentDate: string; // YYYY-MM-DD format
@@ -50,13 +51,11 @@ export function DateNavigation({ currentDate, onDateChange }: DateNavigationProp
   };
 
   const goToToday = () => {
-    const today = new Date();
-    onDateChange(today.toISOString().split('T')[0]);
+    onDateChange(TODAY);
   };
 
   const isToday = () => {
-    const today = new Date().toISOString().split('T')[0];
-    return currentDate === today;
+    return currentDate === TODAY;
   };
 
   return (
@@ -72,7 +71,7 @@ export function DateNavigation({ currentDate, onDateChange }: DateNavigationProp
 
       <div className="flex items-center gap-2">
         <Calendar className="h-4 w-4 text-muted-foreground" />
-        <span className="font-medium text-lg">
+        <span className="font-medium text-lg text-foreground">
           {formatDisplayDate(currentDate)}
         </span>
         {!isToday() && (

@@ -30,7 +30,7 @@ export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelect
   if (isLoading || routines.length === 0) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="h-8 w-32 bg-slate-200 rounded-lg animate-pulse" />
+        <div className="h-8 w-32 bg-muted rounded-lg animate-pulse" />
       </div>
     );
   }
@@ -38,7 +38,7 @@ export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelect
   const currentRoutine = routines[currentIndex];
 
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-white/80 backdrop-blur-sm border-b border-slate-200">
+    <div className="flex items-center justify-between px-4 py-2 bg-card/80 backdrop-blur-sm border-b border-border">
       <Button
         variant="ghost"
         size="sm"
@@ -64,10 +64,10 @@ export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelect
             >
               {currentRoutine.emoji}
             </span>
-            <span className="font-medium text-lg text-slate-800">
+            <span className="font-medium text-lg text-foreground">
               {currentRoutine.name}
               {smartSelected && (
-                <span className="ml-2 text-xs text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-1 rounded">
                   Auto
                 </span>
               )}
@@ -100,8 +100,8 @@ export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelect
               className={cn(
                 "w-2 h-2 rounded-full transition-colors",
                 index === currentIndex 
-                  ? "bg-slate-600" 
-                  : "bg-slate-300 hover:bg-slate-400"
+                  ? "bg-primary" 
+                  : "bg-muted hover:bg-muted-foreground/40"
               )}
             />
           ))}

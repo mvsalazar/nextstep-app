@@ -4,25 +4,44 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 221.2 83.2% 53.3%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 221.2 83.2% 53.3%;
+    /* NextStep Design System Colors */
+    --background: 0 0% 100%; /* #FFFFFF */
+    --foreground: 195 17% 21%; /* #061606 -> #3F565F (text primary) */
+    --surface: 197 17% 97%; /* #F6F8F9 */
+    
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 195 17% 21%; /* #3F565F */
+    
+    --popover: 0 0% 100%; /* #FFFFFF */
+    --popover-foreground: 195 17% 21%; /* #3F565F */
+    
+    /* Primary Brand Colors - #4D7385 */
+    --primary: 198 24% 41%; /* #4D7385 */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF */
+    --primary-light: 198 28% 48%; /* #5A869C */
+    --primary-dark: 195 20% 31%; /* #3F565F */
+    
+    /* Secondary/Accent Colors - #AECDCB */
+    --secondary: 177 28% 76%; /* #AECDCB */
+    --secondary-foreground: 195 17% 21%; /* #3F565F */
+    --accent: 177 28% 76%; /* #AECDCB */
+    --accent-foreground: 195 17% 21%; /* #3F565F */
+    --accent-light: 177 35% 85%; /* #CFE5E3 */
+    --accent-dark: 177 21% 57%; /* #7DA5A2 */
+    
+    /* Neutral Colors */
+    --muted: 197 17% 97%; /* #F6F8F9 */
+    --muted-foreground: 195 12% 62%; /* #9BA8AD */
+    --border: 195 25% 89%; /* #D9E1E4 */
+    --input: 195 25% 89%; /* #D9E1E4 */
+    
+    /* Feedback Colors */
+    --success: 177 21% 57%; /* #7DA5A2 */
+    --warning: 45 73% 61%; /* #E6B655 */
+    --destructive: 0 52% 56%; /* #C15A5A */
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF */
+    
+    --ring: 198 24% 41%; /* #4D7385 - primary */
     --radius: 0.75rem;
   }
 }
@@ -44,7 +63,7 @@
 
   /* Focus styles for accessibility */
   :focus-visible {
-    @apply outline-2 outline-offset-2 outline-blue-600;
+    @apply outline-2 outline-offset-2 outline-ring;
   }
 
   /* Reduced motion support */
@@ -61,9 +80,15 @@
   /* Low-stim theme overrides */
   .low-stim {
     --primary: 215 25% 27%;
+    --primary-foreground: 0 0% 100%;
     --secondary: 210 11% 71%;
+    --secondary-foreground: 215 25% 27%;
     --accent: 210 11% 71%;
+    --accent-foreground: 215 25% 27%;
     --muted: 210 11% 96%;
+    --muted-foreground: 215 10% 40%;
+    --success: 210 11% 60%;
+    --warning: 43 38% 45%;
   }
 
   /* App container */

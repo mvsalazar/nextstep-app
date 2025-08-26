@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNextTask } from '@/hooks/useTasks';
+import { useSettings } from '@/hooks/useSettings';
 import { TaskCard } from './TaskCard';
 import type { Task } from '@/types';
 
@@ -12,7 +13,19 @@ interface NextUpProps {
 
 export const NextUp = ({ task: propTask, onToggleTask, onEditTask }: NextUpProps) => {
   const hookNextTask = useNextTask();
+  const { data: settings } = useSettings();
   const nextTask = propTask !== undefined ? propTask : hookNextTask;
+  
+  // Check if user is parent/guardian
+  const isParentMode = settings?.userRole === 'parent' || settings?.userRole === 'guardian';
+
+  const handleEditTask = (id: string) => {
+    // Only allow parents/guardians to edit tasks
+    if (!isParentMode) {
+      return;
+    }
+    if (onEditTask) onEditTask(id);
+  };
 
   if (!nextTask) {
     return (
@@ -45,8 +58,8 @@ export const NextUp = ({ task: propTask, onToggleTask, onEditTask }: NextUpProps
         animate={{ opacity: 1, x: 0 }}
         className="flex items-center gap-2 mb-3"
       >
-        <ArrowRight className="h-5 w-5 text-blue-600" />
-        <h2 className="text-lg font-semibold text-gray-900">
+        <ArrowRight className="h-5 w-5 text-primary" />
+        <h2 className="text-lg font-semibold text-foreground">
           Next Up
         </h2>
       </motion.div>
@@ -54,8 +67,9 @@ export const NextUp = ({ task: propTask, onToggleTask, onEditTask }: NextUpProps
       <TaskCard
         task={nextTask}
         onToggle={onToggleTask}
-        onEdit={onEditTask}
+        onEdit={handleEditTask}
         isNextUp={true}
+        isEditable={isParentMode}
       />
     </div>
   );

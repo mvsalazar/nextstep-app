@@ -18,7 +18,7 @@ export const HeaderBar = () => {
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
 
   return (
-    <div className="sticky top-0 z-10 bg-white border-b border-gray-200">
+    <div className="sticky top-0 z-10 bg-card border-b border-border">
       <header className="px-4 py-3">
         <div className="max-w-md mx-auto flex items-center justify-between">
           <div className="flex items-center">
@@ -50,8 +50,8 @@ export const HeaderBar = () => {
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-full transition-colors',
                   isLowStim 
-                    ? 'bg-low-stim-200 text-low-stim-800 hover:bg-low-stim-300' 
-                    : 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200'
+                    ? 'bg-muted text-muted-foreground hover:bg-slate-200' 
+                    : 'bg-warning/10 text-warning hover:bg-warning/20'
                 )}
                 role="button"
                 aria-label={`You have ${stars} stars. Click to view rewards.`}
@@ -59,7 +59,7 @@ export const HeaderBar = () => {
                 <Star 
                   className={cn(
                     'h-4 w-4',
-                    isLowStim ? 'text-low-stim-600' : 'text-yellow-600'
+                    isLowStim ? 'text-muted-foreground' : 'text-warning'
                   )} 
                   fill="currentColor" 
                 />
@@ -83,7 +83,7 @@ export const HeaderBar = () => {
               variant="ghost"
               size="sm"
               onClick={() => setAdminOpen(true)}
-              className="p-2 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+              className="p-2 text-warning hover:text-warning hover:bg-warning/10"
               aria-label="Admin access"
             >
               <Shield className="h-5 w-5" />

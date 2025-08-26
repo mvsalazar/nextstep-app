@@ -102,7 +102,11 @@ export const SettingsSheet = () => {
             <Label className="text-base font-medium">User Role</Label>
             <Select value={settings.userRole} onValueChange={handleRoleChange}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>
+                  {settings.userRole === 'child' && 'Child'}
+                  {settings.userRole === 'parent' && 'Parent'}
+                  {settings.userRole === 'guardian' && 'Guardian'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="child">Child</SelectItem>
@@ -149,7 +153,10 @@ export const SettingsSheet = () => {
             <Label className="text-base font-medium">Visual Theme</Label>
             <Select value={settings.theme} onValueChange={handleThemeChange}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>
+                  {settings.theme === 'light' && 'Light Theme'}
+                  {settings.theme === 'lowstim' && 'Low-Stim Theme'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="light">Light Theme</SelectItem>
@@ -169,7 +176,10 @@ export const SettingsSheet = () => {
             <Label className="text-base font-medium">Data Storage</Label>
             <Select value={settings.storageMode} onValueChange={handleStorageModeChange}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue>
+                  {settings.storageMode === 'local' && 'Local Storage'}
+                  {settings.storageMode === 'api' && 'API Server'}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="local">Local Storage</SelectItem>

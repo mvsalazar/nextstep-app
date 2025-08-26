@@ -5,7 +5,6 @@ import App from './App.tsx'
 
 console.log('Starting NextStep app...')
 
-// Skip MSW for now to avoid issues
 const rootElement = document.getElementById('root')
 
 if (rootElement) {

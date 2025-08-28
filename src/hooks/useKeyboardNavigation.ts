@@ -8,7 +8,8 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
     setSelectedTaskId, 
     setSettingsOpen, 
     setRewardsOpen, 
-    setTaskEditOpen 
+    setTaskEditOpen,
+    setKeyboardHelpOpen,
   } = useUiStore();
 
   const incompleteTasks = tasks.filter(task => !task.done);
@@ -106,16 +107,7 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
 
         case '?':
           event.preventDefault();
-          // Could show help modal in the future
-          console.log('Keyboard shortcuts:', {
-            '↑/↓ or j/k': 'Navigate tasks',
-            'Enter/Space': 'Toggle selected task',
-            'Escape': 'Clear selection',
-            's or ,': 'Open settings',
-            'r': 'Open rewards',
-            'n': 'Add new task',
-            '?': 'Show this help'
-          });
+          setKeyboardHelpOpen(true);
           break;
       }
     };

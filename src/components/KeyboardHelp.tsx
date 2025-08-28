@@ -1,6 +1,7 @@
 import { HelpCircle, Keyboard } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { useUiStore } from '@/store/ui';
 
 const shortcuts = [
   { key: '↑/↓ or j/k', description: 'Navigate through tasks' },
@@ -13,10 +14,11 @@ const shortcuts = [
 ];
 
 export const KeyboardHelp = () => {
+  const { isKeyboardHelpOpen, setKeyboardHelpOpen } = useUiStore();
   return (
-    <Dialog>
+    <Dialog open={isKeyboardHelpOpen} onOpenChange={setKeyboardHelpOpen}>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" className="p-2" aria-label="Show keyboard shortcuts">
+        <Button variant="ghost" size="sm" className="p-2" aria-label="Show keyboard shortcuts" onClick={() => setKeyboardHelpOpen(true)}>
           <HelpCircle className="h-4 w-4" />
         </Button>
       </DialogTrigger>

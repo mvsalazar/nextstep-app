@@ -8,6 +8,7 @@ import { KeyboardHelp } from './KeyboardHelp';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import nextstepLogo from '@/assets/next_step_logo.png';
+import { HeaderMenu } from '@/components/HeaderMenu';
 
 export const HeaderBar = () => {
   const { data: stars = 0 } = useStars();
@@ -76,35 +77,31 @@ export const HeaderBar = () => {
               variant="ghost"
               size="sm"
               onClick={() => setAdminOpen(true)}
-              className="p-2 text-warning hover:text-warning hover:bg-warning/10"
+              className="p-2 text-warning hover:text-warning hover:bg-warning/10 hidden sm:inline-flex"
               aria-label="Admin access"
             >
               <Shield className="h-5 w-5" />
             </Button>
           )}
 
-          <KeyboardHelp />
+          <div className="hidden sm:block">
+            <KeyboardHelp />
+          </div>
           
-          {storageMode === 'api' && isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => logout()}
-              className="px-2"
-            >
-              Sign out
-            </Button>
-          )}
+          {/* Sign out removed from main header; available in Settings and Menu */}
 
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setSettingsOpen(true)}
-            className="p-2"
+            className="p-2 hidden sm:inline-flex"
             aria-label="Open settings"
           >
             <Settings className="h-5 w-5" />
           </Button>
+
+          {/* Hamburger menu (mobile) */}
+          <HeaderMenu />
         </div>
       </div>
     </header>

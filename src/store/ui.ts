@@ -9,6 +9,7 @@ interface UiState {
   isRoutineManagerOpen: boolean;
   showCelebration: boolean;
   celebrationStars: number;
+  isKeyboardHelpOpen: boolean;
 }
 
 interface UiActions {
@@ -20,6 +21,7 @@ interface UiActions {
   setRoutineManagerOpen: (open: boolean) => void;
   showCelebrationModal: (stars: number) => void;
   hideCelebration: () => void;
+  setKeyboardHelpOpen: (open: boolean) => void;
 }
 
 export const useUiStore = create<UiState & UiActions>((set) => ({
@@ -32,6 +34,7 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   isRoutineManagerOpen: false,
   showCelebration: false,
   celebrationStars: 0,
+  isKeyboardHelpOpen: false,
 
   // Actions
   setSelectedTaskId: (id) => set({ selectedTaskId: id }),
@@ -42,4 +45,5 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   setRoutineManagerOpen: (open) => set({ isRoutineManagerOpen: open }),
   showCelebrationModal: (stars) => set({ showCelebration: true, celebrationStars: stars }),
   hideCelebration: () => set({ showCelebration: false, celebrationStars: 0 }),
+  setKeyboardHelpOpen: (open) => set({ isKeyboardHelpOpen: open }),
 }));

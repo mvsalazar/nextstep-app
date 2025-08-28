@@ -39,10 +39,41 @@ export const useUpdateSettings = () => {
 
   return useMutation({
     mutationFn: (updates: Partial<Settings>) => adapter.updateSettings(updates),
-    onSuccess: (updatedSettings) => {
+    onSuccess: (updatedSettings, variables) => {
+      // Keep a local mirror of key settings so features that consult localStorage remain in sync
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        const appState = stored ? JSON.parse(stored) : {};
+        appState.settings = appState.settings || {};
+        if (variables) {
+          if ('storageMode' in variables && variables.storageMode) {
+            appState.settings.storageMode = variables.storageMode;
+          }
+          if ('currentChildId' in variables) {
+            appState.settings.currentChildId = variables.currentChildId ?? null;
+          }
+          if ('currentDate' in variables && variables.currentDate) {
+            appState.settings.currentDate = variables.currentDate;
+          }
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.warn('Failed to persist settings locally:', e);
+      }
       queryClient.setQueryData(['settings', storageMode], updatedSettings);
       // Also invalidate all settings queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['settings'] });
+      // If storage mode changed, refresh data-dependent queries so UI flips cleanly
+      if (variables && 'storageMode' in variables && variables.storageMode) {
+        const keys = ['tasks', 'routines', 'rewards', 'stars', 'children'];
+        keys.forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+      }
+      // If child/date changed, refresh tasks/stars/routines accordingly
+      if (variables && ('currentChildId' in variables || 'currentDate' in variables)) {
+        queryClient.invalidateQueries({ queryKey: ['tasks'] });
+        queryClient.invalidateQueries({ queryKey: ['stars'] });
+        queryClient.invalidateQueries({ queryKey: ['routines'] });
+      }
     },
     onError: (error) => {
       console.error('Failed to update settings:', error);

@@ -7,22 +7,29 @@ export const getRewards = async (): Promise<RewardRule[]> => {
   return state.rewardRules;
 };
 
-export const getStars = async (): Promise<number> => {
+export const getStars = async (_childId?: string): Promise<number> => {
   await new Promise(resolve => setTimeout(resolve, 50));
   const state = loadAppState();
-  return state.stars;
+  const childId = state.settings.currentChildId || (state.children[0]?.id);
+  return childId ? (state.starsByChild?.[childId] || 0) : 0;
 };
 
-export const updateStars = async (delta: number): Promise<number> => {
+export const updateStars = async (delta: number, _childId?: string): Promise<number> => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   let newStarCount = 0;
 
   updateAppState(state => {
-    newStarCount = Math.max(0, state.stars + delta);
+    const childId = state.settings.currentChildId || (state.children[0]?.id);
+    const starsByChild = { ...(state.starsByChild || {}) };
+    if (childId) {
+      const prev = starsByChild[childId] || 0;
+      newStarCount = Math.max(0, prev + delta);
+      starsByChild[childId] = newStarCount;
+    }
     return {
       ...state,
-      stars: newStarCount,
+      starsByChild,
     };
   });
 

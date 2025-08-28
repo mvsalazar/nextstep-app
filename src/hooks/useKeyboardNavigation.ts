@@ -1,9 +1,8 @@
 import { useEffect, useCallback } from 'react';
-import { useTasks } from './useTasks';
+import type { Task } from '@/types';
 import { useUiStore } from '@/store/ui';
 
-export const useKeyboardNavigation = () => {
-  const { data: tasks = [] } = useTasks();
+export const useKeyboardNavigation = (tasks: Task[] = []) => {
   const { 
     selectedTaskId, 
     setSelectedTaskId, 

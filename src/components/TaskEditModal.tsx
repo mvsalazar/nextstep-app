@@ -82,6 +82,7 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
       dueTime: formData.dueTime || undefined,
       prime: formData.prime.length > 0 ? formData.prime : undefined,
       routineId: routineId,
+      childId: settings?.currentChildId || undefined,
       date: date,
       done: false,
       isTemplate: false, // Daily tasks are not templates

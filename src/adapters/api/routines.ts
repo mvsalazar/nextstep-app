@@ -1,8 +1,9 @@
 import type { Routine } from '@/types';
 import { apiClient } from './client';
 
-export const getRoutines = async (): Promise<Routine[]> => {
-  return apiClient.get<Routine[]>('/v1/routines');
+export const getRoutines = async (childId?: string): Promise<Routine[]> => {
+  const qs = childId ? `?childId=${encodeURIComponent(childId)}` : '';
+  return apiClient.get<Routine[]>(`/v1/routines${qs}`);
 };
 
 export const getRoutineById = async (id: string): Promise<Routine | null> => {
@@ -28,6 +29,6 @@ export const deleteRoutine = async (id: string): Promise<void> => {
   await apiClient.delete<{ success: boolean }>(`/v1/routines/${id}`);
 };
 
-export const reorderRoutines = async (routineIds: string[]): Promise<void> => {
-  await apiClient.post<{ success: boolean }>('/v1/routines/reorder', { routineIds });
+export const reorderRoutines = async (routineIds: string[], childId?: string): Promise<void> => {
+  await apiClient.post<{ success: boolean }>('/v1/routines/reorder', { routineIds, childId });
 };

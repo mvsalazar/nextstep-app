@@ -3,7 +3,10 @@ export type PrimeOffset = 10 | 5 | 1;
 export type Task = {
   id: string;
   routineId: string;
-  userId?: string;
+  // Owner is the main user (parent/guardian)
+  ownerId?: string;
+  // Assignee is the child this task belongs to
+  childId?: string;
   title: string;
   emoji: string;
   done: boolean;
@@ -18,7 +21,10 @@ export type Task = {
 
 export type Routine = {
   id: string;
-  userId?: string;
+  // Owner is the main user (parent/guardian)
+  ownerId?: string;
+  // Assignee is the child this routine is for
+  childId?: string;
   name: string;
   emoji: string;
   color?: string;
@@ -41,7 +47,8 @@ export type DailyRoutine = {
 
 export type RewardRule = {
   id: string;
-  userId?: string;
+  // Owned by the main user
+  ownerId?: string;
   name: string;
   cost: number;
 };
@@ -56,13 +63,32 @@ export type Settings = {
   adminPin?: string;
   currentRoutineId?: string;
   currentDate?: string; // YYYY-MM-DD format, defaults to today
+  // Active child context for viewing/managing data
+  currentChildId?: string | null;
+};
+
+export type ParentUser = {
+  id: string;
+  name?: string;
+};
+
+export type ChildUser = {
+  id: string;
+  name: string;
+  emoji?: string;
+  parentId: string; // reference to main user
 };
 
 export type AppState = {
+  parentUser: ParentUser;
+  children: ChildUser[];
   routines: Routine[];
   dailyRoutines: DailyRoutine[];
   tasks: Task[];
-  stars: number;
+  // Per-child star balances
+  starsByChild?: Record<string, number>;
+  // Legacy: kept for migration
+  stars?: number;
   rewardRules: RewardRule[];
   settings: Settings;
 };

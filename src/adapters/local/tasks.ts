@@ -36,7 +36,7 @@ const generateDailyTasksForDate = (date: string): void => {
   }
 };
 
-export const getTasks = async (routineId?: string, date?: string): Promise<Task[]> => {
+export const getTasks = async (routineId?: string, date?: string, _childId?: string): Promise<Task[]> => {
   await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
   
   // If we have a date, ensure daily tasks exist for that date
@@ -45,6 +45,7 @@ export const getTasks = async (routineId?: string, date?: string): Promise<Task[
   }
   
   const currentState = loadAppState();
+  const currentChildId = currentState.settings.currentChildId;
   let tasks = currentState.tasks;
   
   // When filtering by date, only return non-template tasks
@@ -55,6 +56,11 @@ export const getTasks = async (routineId?: string, date?: string): Promise<Task[
     tasks = tasks.filter(task => task.isTemplate);
   }
   
+  // Scope by active child if set
+  if (currentChildId) {
+    tasks = tasks.filter(task => task.childId === currentChildId);
+  }
+
   // Filter by routineId if provided
   if (routineId) {
     tasks = tasks.filter(task => task.routineId === routineId);
@@ -80,6 +86,8 @@ export const createTask = async (taskData: Omit<Task, 'id' | 'updatedAt' | 'vers
   
   const newTask: Task = {
     ...taskData,
+    ownerId: state.parentUser.id,
+    childId: state.settings.currentChildId || undefined,
     id: `t${Date.now()}`,
     order: maxOrder + 1,
     updatedAt: new Date().toISOString(),
@@ -179,6 +187,8 @@ export const createTemplate = async (templateData: Omit<Task, 'id' | 'updatedAt'
   
   const newTemplate: Task = {
     ...templateData,
+    ownerId: state.parentUser.id,
+    childId: state.settings.currentChildId || undefined,
     id: `tpl${Date.now()}`,
     order: maxOrder + 1,
     isTemplate: true,

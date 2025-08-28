@@ -1,4 +1,4 @@
-import { Star, Settings, Gift, Shield } from 'lucide-react';
+import { Star, Settings, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { useStars } from '@/hooks/useRewards';
@@ -6,12 +6,14 @@ import { useSettings } from '@/hooks/useSettings';
 import { useUiStore } from '@/store/ui';
 import { KeyboardHelp } from './KeyboardHelp';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
 import nextstepLogo from '@/assets/next_step_logo.png';
 
 export const HeaderBar = () => {
   const { data: stars = 0 } = useStars();
   const { data: settings } = useSettings();
   const { setSettingsOpen, setRewardsOpen, setAdminOpen } = useUiStore();
+  const { storageMode, isAuthenticated, logout } = useAuth();
 
   const isChildMode = settings?.mode === 'child';
   const isLowStim = settings?.theme === 'lowstim';
@@ -39,7 +41,8 @@ export const HeaderBar = () => {
           </div>
 
         <div className="flex items-center gap-2">
-          {isChildMode && (
+          {/* Child Switcher */}
+          {(isChildMode || canAccessAdmin) && (
             <>
               <motion.button
                 key={stars}
@@ -65,16 +68,6 @@ export const HeaderBar = () => {
                 />
                 <span className="font-semibold tabular-nums">{stars}</span>
               </motion.button>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setRewardsOpen(true)}
-                className="p-2"
-                aria-label="View rewards"
-              >
-                <Gift className="h-5 w-5" />
-              </Button>
             </>
           )}
 
@@ -92,6 +85,17 @@ export const HeaderBar = () => {
 
           <KeyboardHelp />
           
+          {storageMode === 'api' && isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => logout()}
+              className="px-2"
+            >
+              Sign out
+            </Button>
+          )}
+
           <Button
             variant="ghost"
             size="sm"

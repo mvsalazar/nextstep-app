@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
 import { useRoutines } from '@/hooks/useRoutines';
 import { useTasks } from '@/hooks/useTasks';
+import { useCurrentDate } from '@/hooks/useSettings';
 import { useUiStore } from '@/store/ui';
 
 interface AdminSectionProps {
@@ -34,7 +35,8 @@ export const AdminSection = ({ isOpen, onClose }: AdminSectionProps) => {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { routines } = useRoutines();
-  const { data: allTasks = [] } = useTasks();
+  const { currentDate } = useCurrentDate();
+  const { data: allTasks = [] } = useTasks(undefined, currentDate);
   const { setRoutineManagerOpen, setSettingsOpen } = useUiStore();
 
   const handlePinSubmit = () => {

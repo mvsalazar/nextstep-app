@@ -7,11 +7,14 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useRewards, useStars, useCreateReward, useDeleteReward, useUpdateStars } from '@/hooks/useRewards';
+import { useSettings } from '@/hooks/useSettings';
+
 import { useUiStore } from '@/store/ui';
 import { toast } from 'sonner';
 
 export const RewardsPanel = () => {
   const { data: rewards = [] } = useRewards();
+  const { data: settings } = useSettings();
   const { data: stars = 0 } = useStars();
   const createReward = useCreateReward();
   const deleteReward = useDeleteReward();
@@ -21,6 +24,8 @@ export const RewardsPanel = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newRewardName, setNewRewardName] = useState('');
   const [newRewardCost, setNewRewardCost] = useState('5');
+
+  const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
 
   const handleAddReward = async () => {
     const cost = parseInt(newRewardCost);
@@ -40,7 +45,7 @@ export const RewardsPanel = () => {
       setShowAddForm(false);
       toast.success('Reward added!');
     } catch (error) {
-      toast.error('Failed to add reward');
+      toast.error('Failed to add reward. ' + error);
     }
   };
 
@@ -49,7 +54,7 @@ export const RewardsPanel = () => {
       await deleteReward.mutateAsync(id);
       toast.success(`"${name}" reward removed`);
     } catch (error) {
-      toast.error('Failed to remove reward');
+      toast.error('Failed to remove reward. ' + error);
     }
   };
 
@@ -63,7 +68,7 @@ export const RewardsPanel = () => {
       await updateStars.mutateAsync(-reward.cost);
       toast.success(`🎉 You redeemed "${reward.name}"! Enjoy!`);
     } catch (error) {
-      toast.error('Failed to redeem reward');
+      toast.error('Failed to redeem reward. ' + error);
     }
   };
 
@@ -79,14 +84,16 @@ export const RewardsPanel = () => {
           </SheetHeader>
 
           <div className="space-y-4 py-6 px-6">
-            <Button
-              onClick={() => setShowAddForm(true)}
-              variant="outline"
-              className="w-full gap-2"
-            >
-              <Plus className="h-4 w-4" />
-              Add New Reward
-            </Button>
+            {canAccessAdmin && (
+              <Button
+                onClick={() => setShowAddForm(true)}
+                variant="outline"
+                className="w-full gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add New Reward
+              </Button>
+            )}
 
             {rewards.length === 0 ? (
               <div className="text-center py-8">
@@ -121,15 +128,17 @@ export const RewardsPanel = () => {
                           >
                             {stars >= reward.cost ? 'Redeem' : 'Need More ⭐'}
                           </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteReward(reward.id, reward.name)}
-                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            aria-label={`Delete ${reward.name} reward`}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          {canAccessAdmin && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteReward(reward.id, reward.name)}
+                              className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                              aria-label={`Delete ${reward.name} reward`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardContent>

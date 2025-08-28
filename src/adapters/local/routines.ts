@@ -1,10 +1,14 @@
 import type { Routine } from '@/types';
 import { updateAppState, loadAppState } from './storage';
 
-export const getRoutines = async (): Promise<Routine[]> => {
+export const getRoutines = async (_childId?: string): Promise<Routine[]> => {
   await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
   const state = loadAppState();
-  return state.routines.filter(r => r.active).sort((a, b) => a.order - b.order);
+  const currentChildId = state.settings.currentChildId;
+  const byChild = currentChildId
+    ? state.routines.filter(r => r.childId === currentChildId)
+    : state.routines;
+  return byChild.filter(r => r.active).sort((a, b) => a.order - b.order);
 };
 
 export const getRoutineById = async (id: string): Promise<Routine | null> => {
@@ -17,6 +21,8 @@ export const createRoutine = async (routine: Omit<Routine, 'id' | 'updatedAt' | 
   await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   const newRoutine: Routine = {
     ...routine,
+    ownerId: loadAppState().parentUser.id,
+    childId: loadAppState().settings.currentChildId || undefined,
     id: `r${Date.now()}`,
     updatedAt: new Date().toISOString(),
     version: 1,
@@ -69,7 +75,7 @@ export const deleteRoutine = async (id: string): Promise<void> => {
   }));
 };
 
-export const reorderRoutines = async (routineIds: string[]): Promise<void> => {
+export const reorderRoutines = async (routineIds: string[], _childId?: string): Promise<void> => {
   await new Promise(resolve => setTimeout(resolve, 100)); // Simulate network delay
   updateAppState(state => ({
     ...state,

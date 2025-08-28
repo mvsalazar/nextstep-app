@@ -22,7 +22,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
   const setSelectedTaskId = useUiStore((state) => state.setSelectedTaskId);
   
   // Initialize keyboard navigation
-  const { selectedTaskId } = useKeyboardNavigation();
+  const { selectedTaskId } = useKeyboardNavigation(tasks);
   
   // Check if user is parent/guardian
   const isParentMode = settings?.userRole === 'parent' || settings?.userRole === 'guardian';

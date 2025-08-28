@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useRoutines } from '@/hooks/useRoutines';
+import { useSettings, useCurrentDate } from '@/hooks/useSettings';
 import { useTasks } from '@/hooks/useTasks';
 import type { Routine } from '@/types';
 
@@ -59,7 +60,9 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
   });
 
   const { routines, createRoutine, updateRoutine, deleteRoutine } = useRoutines();
-  const { data: allTasks = [] } = useTasks();
+  const { data: settings } = useSettings();
+  const { currentDate } = useCurrentDate();
+  const { data: allTasks = [] } = useTasks(undefined, currentDate);
 
   const handleCreateNew = () => {
     setIsCreating(true);
@@ -88,6 +91,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
       createRoutine({
         ...formData,
         order: routines.length + 1,
+        childId: settings?.currentChildId || undefined,
       });
       setIsCreating(false);
     } else if (editingRoutine) {

@@ -9,12 +9,14 @@ interface NextUpProps {
   task?: Task | null;
   onToggleTask: (id: string, done: boolean) => void;
   onEditTask?: (id: string) => void;
+  taskCount?: number; // total tasks for the current context
 }
 
-export const NextUp = ({ task: propTask, onToggleTask, onEditTask }: NextUpProps) => {
+export const NextUp = ({ task: propTask, onToggleTask, onEditTask, taskCount }: NextUpProps) => {
   const hookNextTask = useNextTask();
   const { data: settings } = useSettings();
   const nextTask = propTask !== undefined ? propTask : hookNextTask;
+  const hasTasks = taskCount === undefined ? true : taskCount > 0;
   
   // Check if user is parent/guardian
   const isParentMode = settings?.userRole === 'parent' || settings?.userRole === 'guardian';
@@ -28,6 +30,9 @@ export const NextUp = ({ task: propTask, onToggleTask, onEditTask }: NextUpProps
   };
 
   if (!nextTask) {
+    // If there are no tasks, do not show the All Done badge
+    if (!hasTasks) return null;
+
     return (
       <motion.div
         initial={{ opacity: 0, y: 20 }}

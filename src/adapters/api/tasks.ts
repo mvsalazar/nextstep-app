@@ -15,10 +15,19 @@ export const createTemplate = async (templateData: Omit<Task, 'id' | 'updatedAt'
   return apiClient.post<Task>('/v1/templates', { ...templateData, isTemplate: true });
 };
 
-export const getTasks = async (routineId?: string, date?: string): Promise<Task[]> => {
+export const updateTemplate = async (id: string, updates: Partial<Task>): Promise<Task> => {
+  return apiClient.patch<Task>(`/v1/templates/${id}`, updates);
+};
+
+export const deleteTemplate = async (id: string): Promise<{ success: boolean }> => {
+  return apiClient.delete<{ success: boolean }>(`/v1/templates/${id}`);
+};
+
+export const getTasks = async (routineId?: string, date?: string, childId?: string): Promise<Task[]> => {
   const params = new URLSearchParams();
   if (routineId) params.append('routineId', routineId);
   if (date) params.append('date', date);
+  if (childId) params.append('childId', childId);
   
   const queryString = params.toString();
   const url = queryString ? `/v1/tasks?${queryString}` : '/v1/tasks';
@@ -29,8 +38,8 @@ export const getTasks = async (routineId?: string, date?: string): Promise<Task[
 };
 
 // Endpoint to generate daily tasks from templates for a specific date
-export const generateDailyTasks = async (date: string, routineIds?: string[]): Promise<Task[]> => {
-  const body = { date, routineIds };
+export const generateDailyTasks = async (date: string, routineIds?: string[], childId?: string): Promise<Task[]> => {
+  const body = { date, routineIds, childId };
   return apiClient.post<Task[]>('/v1/tasks/generate-daily', body);
 };
 
@@ -46,6 +55,6 @@ export const deleteTask = async (id: string): Promise<{ success: boolean }> => {
   return apiClient.delete<{ success: boolean }>(`/v1/tasks/${id}`);
 };
 
-export const reorderTasks = async (routineId: string, taskIds: string[]): Promise<void> => {
-  return apiClient.post<void>('/v1/tasks/reorder', { routineId, taskIds });
+export const reorderTasks = async (routineId: string, taskIds: string[], childId?: string): Promise<void> => {
+  return apiClient.post<void>('/v1/tasks/reorder', { routineId, taskIds, childId });
 };

@@ -1,23 +1,137 @@
 import { http, HttpResponse } from 'msw';
-import type { Task, RewardRule, Settings, Routine } from '@/types';
-import { SEED_TASKS, SEED_REWARDS, DEFAULT_SETTINGS, SEED_ROUTINES } from '@/lib/constants';
+import type { Task, RewardRule, Settings, Routine, ChildUser } from '@/types';
+import { SEED_TASKS, SEED_REWARDS, DEFAULT_SETTINGS, SEED_ROUTINES, SEED_CHILDREN, SEED_TASK_TEMPLATES } from '@/lib/constants';
 
 // Mock data store
 let mockTasks: Task[] = [...SEED_TASKS];
 let mockRewards: RewardRule[] = [...SEED_REWARDS];
 let mockSettings: Settings = { ...DEFAULT_SETTINGS };
 let mockRoutines: Routine[] = [...SEED_ROUTINES];
-let mockStars = 0;
+let mockStarsByChild: Record<string, number> = {};
+let mockChildren: ChildUser[] = [...SEED_CHILDREN];
+// In-memory mock session store for API mode
+const mockSessions: Record<string, { id: string; email: string; name?: string; role: 'parent' | 'guardian' }> = {};
 
 export const handlers = [
+  // Auth endpoints (mocked)
+  http.post('/api/v1/auth/signup', async ({ request }) => {
+    const body = await request.json() as { email: string; password: string; name?: string };
+    const token = `mock-token-${Math.random().toString(36).slice(2, 8)}`;
+    const user = { id: 'parent-1', email: body.email, name: body.name || 'Parent', role: 'parent' as const };
+    mockSessions[token] = user;
+    // When logging in as parent, switch role in settings for UI
+    mockSettings.userRole = 'parent';
+    return HttpResponse.json({ token, user });
+  }),
+  http.post('/api/v1/auth/login', async ({ request }) => {
+    const body = await request.json() as { email: string; password: string };
+    // Accept any credentials in mock
+    const token = `mock-token-${Math.random().toString(36).slice(2, 8)}`;
+    const user = { id: 'parent-1', email: body.email, name: 'Parent', role: 'parent' as const };
+    mockSessions[token] = user;
+    mockSettings.userRole = 'parent';
+    return HttpResponse.json({ token, user });
+  }),
+  http.post('/api/v1/auth/logout', async ({ request }) => {
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.replace('Bearer ', '');
+    delete mockSessions[token];
+    return HttpResponse.json({ success: true });
+  }),
+  http.get('/api/v1/me', ({ request }) => {
+    const auth = request.headers.get('authorization') || '';
+    const token = auth.replace('Bearer ', '');
+    const user = mockSessions[token];
+    if (!user) return new HttpResponse('Unauthorized', { status: 401 });
+    return HttpResponse.json(user);
+  }),
+
+  // Children management
+  http.get('/api/v1/children', () => {
+    return HttpResponse.json(mockChildren);
+  }),
+  http.post('/api/v1/children', async ({ request }) => {
+    const { name, emoji } = await request.json() as { name: string; emoji?: string };
+    const trimmed = (name || '').trim();
+    if (!trimmed) return new HttpResponse('Invalid name', { status: 400 });
+    const ts = Date.now();
+    const newChild: ChildUser = {
+      id: `c${ts}`,
+      name: trimmed,
+      emoji: emoji || '🧒',
+      parentId: 'p1',
+    };
+    mockChildren.push(newChild);
+    mockSettings.currentChildId = newChild.id;
+    mockStarsByChild[newChild.id] = 0;
+
+    // Clone seed routines for this child with new IDs
+    const routineIdMap = new Map<string, string>();
+    const clonedRoutines: Routine[] = SEED_ROUTINES.map((r, idx) => {
+      const newId = `r${ts}_${idx + 1}`;
+      routineIdMap.set(r.id, newId);
+      return {
+        ...r,
+        id: newId,
+        ownerId: 'p1',
+        childId: newChild.id,
+        updatedAt: new Date().toISOString(),
+        version: 1,
+      };
+    });
+    mockRoutines.push(...clonedRoutines);
+
+    // Clone seed templates for this child, rewiring routineId
+    const clonedTemplates: Task[] = SEED_TASK_TEMPLATES.map((t, idx) => ({
+      ...t,
+      id: `tpl${ts}_${idx + 1}`,
+      ownerId: 'p1',
+      childId: newChild.id,
+      routineId: routineIdMap.get(t.routineId) || t.routineId,
+      isTemplate: true,
+      date: undefined,
+      done: false,
+      updatedAt: new Date().toISOString(),
+      version: 1,
+    }));
+    mockTasks.push(...clonedTemplates);
+    return HttpResponse.json(newChild, { status: 201 });
+  }),
+  http.delete('/api/v1/children/:id', ({ params }) => {
+    const { id } = params as { id: string };
+    const before = mockChildren.length;
+    mockChildren = mockChildren.filter(c => c.id !== id);
+    if (mockChildren.length === before) return new HttpResponse('Not found', { status: 404 });
+    // cleanup associated data
+    delete mockStarsByChild[id];
+    mockTasks = mockTasks.filter(t => t.childId !== id);
+    mockRoutines = mockRoutines.filter(r => r.childId !== id);
+    if (mockSettings.currentChildId === id) {
+      mockSettings.currentChildId = mockChildren[0]?.id || null;
+    }
+    return HttpResponse.json({ success: true });
+  }),
+
+  http.patch('/api/v1/children/:id', async ({ params, request }) => {
+    const { id } = params as { id: string };
+    const updates = await request.json() as Partial<ChildUser>;
+    const idx = mockChildren.findIndex(c => c.id === id);
+    if (idx === -1) return new HttpResponse('Not found', { status: 404 });
+    mockChildren[idx] = { ...mockChildren[idx], ...updates };
+    return HttpResponse.json(mockChildren[idx]);
+  }),
   // Health check
   http.get('/api/health', () => {
     return HttpResponse.json({ ok: true });
   }),
 
   // Routines endpoints
-  http.get('/api/v1/routines', () => {
-    return HttpResponse.json(mockRoutines.filter(r => r.active).sort((a, b) => a.order - b.order));
+  http.get('/api/v1/routines', ({ request }) => {
+    const url = new URL(request.url);
+    const childId = url.searchParams.get('childId');
+    let routines = mockRoutines;
+    if (childId) routines = routines.filter(r => r.childId === childId);
+    return HttpResponse.json(routines.filter(r => r.active).sort((a, b) => a.order - b.order));
   }),
 
   http.get('/api/v1/routines/:id', ({ params }) => {
@@ -96,7 +210,9 @@ export const handlers = [
   http.get('/api/v1/templates', ({ request }) => {
     const url = new URL(request.url);
     const routineId = url.searchParams.get('routineId');
+    const childId = url.searchParams.get('childId');
     let templates = mockTasks.filter(task => task.isTemplate);
+    if (childId) templates = templates.filter(t => t.childId === childId);
     if (routineId) {
       templates = templates.filter(task => task.routineId === routineId);
     }
@@ -120,56 +236,71 @@ export const handlers = [
     return HttpResponse.json(newTemplate, { status: 201 });
   }),
 
+  http.patch('/api/v1/templates/:id', async ({ params, request }) => {
+    const { id } = params as { id: string };
+    const updates = await request.json() as Partial<Task>;
+    const idx = mockTasks.findIndex(t => t.id === id && t.isTemplate);
+    if (idx === -1) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
+    mockTasks[idx] = {
+      ...mockTasks[idx],
+      ...updates,
+      isTemplate: true,
+      updatedAt: new Date().toISOString(),
+      version: (mockTasks[idx].version || 1) + 1,
+    };
+    return HttpResponse.json(mockTasks[idx]);
+  }),
+
+  http.delete('/api/v1/templates/:id', ({ params }) => {
+    const { id } = params as { id: string };
+    const before = mockTasks.length;
+    mockTasks = mockTasks.filter(t => !(t.id === id && t.isTemplate));
+    if (mockTasks.length === before) return HttpResponse.json({ code: 'NOT_FOUND', message: 'Template not found' }, { status: 404 });
+    return HttpResponse.json({ success: true });
+  }),
+
   // Tasks endpoints (with date-based generation)
   http.get('/api/v1/tasks', ({ request }) => {
     const url = new URL(request.url);
     const routineId = url.searchParams.get('routineId');
     const date = url.searchParams.get('date');
-    
-    // If date is provided, ensure daily tasks exist (simulate backend logic)
-    if (date) {
-      const existingDailyTasks = mockTasks.filter(task => 
-        !task.isTemplate && task.date === date
-      );
-      
-      if (existingDailyTasks.length === 0) {
-        // Generate daily tasks from templates
-        const templates = mockTasks.filter(task => task.isTemplate);
-        const dailyTasks = templates.map(template => ({
-          ...template,
-          id: `${template.id}_${date}`,
-          date,
-          done: false,
-          isTemplate: false,
-          updatedAt: new Date().toISOString(),
-          version: 1,
-        }));
-        mockTasks.push(...dailyTasks);
-      }
+    const childId = url.searchParams.get('childId');
+    if (!date) {
+      return HttpResponse.json({ code: 'BAD_REQUEST', message: 'date is required' }, { status: 400 });
     }
-    
-    let tasks = mockTasks;
-    
-    // Filter by date (only non-template tasks)
-    if (date) {
-      tasks = tasks.filter(task => !task.isTemplate && task.date === date);
+
+    // Ensure daily tasks exist (simulate backend logic)
+    let existingDailyTasks = mockTasks.filter(task => !task.isTemplate && task.date === date);
+    if (childId) existingDailyTasks = existingDailyTasks.filter(t => t.childId === childId);
+
+    if (existingDailyTasks.length === 0) {
+      let templates = mockTasks.filter(task => task.isTemplate);
+      if (childId) templates = templates.filter(t => t.childId === childId);
+      if (routineId) templates = templates.filter(t => t.routineId === routineId);
+      const dailyTasks = templates.map(template => ({
+        ...template,
+        id: `${template.id}_${date}`,
+        date,
+        done: false,
+        isTemplate: false,
+        updatedAt: new Date().toISOString(),
+        version: 1,
+      }));
+      mockTasks.push(...dailyTasks);
+      existingDailyTasks = dailyTasks;
     } else {
-      // If no date, return templates for management
-      tasks = tasks.filter(task => task.isTemplate);
+      if (routineId) existingDailyTasks = existingDailyTasks.filter(t => t.routineId === routineId);
     }
-    
-    // Filter by routine
-    if (routineId) {
-      tasks = tasks.filter(task => task.routineId === routineId);
-    }
-    
-    return HttpResponse.json(tasks.sort((a, b) => a.order - b.order));
+
+    const tasks = existingDailyTasks.sort((a, b) => a.order - b.order);
+    return HttpResponse.json(tasks);
   }),
 
   http.post('/api/v1/tasks/generate-daily', async ({ request }) => {
-    const { date, routineIds } = await request.json() as { date: string; routineIds?: string[] };
+    const { date, routineIds, childId } = await request.json() as { date: string; routineIds?: string[]; childId?: string };
     
     let templates = mockTasks.filter(task => task.isTemplate);
+    if (childId) templates = templates.filter(t => t.childId === childId);
     if (routineIds) {
       templates = templates.filter(task => routineIds.includes(task.routineId));
     }
@@ -244,7 +375,7 @@ export const handlers = [
   }),
 
   http.post('/api/v1/tasks/reorder', async ({ request }) => {
-    const { routineId, taskIds } = await request.json() as { routineId: string; taskIds: string[] };
+    const { routineId, taskIds } = await request.json() as { routineId: string; taskIds: string[]; childId?: string };
     mockTasks = mockTasks.map(task => {
       if (task.routineId === routineId) {
         const newOrder = taskIds.indexOf(task.id);
@@ -302,14 +433,20 @@ export const handlers = [
   }),
 
   // Stars endpoints
-  http.get('/api/v1/stars', () => {
-    return HttpResponse.json({ stars: mockStars });
+  http.get('/api/v1/stars', ({ request }) => {
+    const url = new URL(request.url);
+    const childId = url.searchParams.get('childId') || 'c1';
+    const stars = mockStarsByChild[childId] || 0;
+    return HttpResponse.json({ stars });
   }),
 
   http.patch('/api/v1/stars', async ({ request }) => {
-    const { delta } = await request.json() as { delta: number };
-    mockStars = Math.max(0, mockStars + delta);
-    return HttpResponse.json({ stars: mockStars });
+    const { delta, childId } = await request.json() as { delta: number; childId?: string };
+    const id = childId || 'c1';
+    const prev = mockStarsByChild[id] || 0;
+    const next = Math.max(0, prev + delta);
+    mockStarsByChild[id] = next;
+    return HttpResponse.json({ stars: next });
   }),
 
   // Settings endpoints

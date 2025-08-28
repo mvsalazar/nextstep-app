@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react';
 import { useTasks } from './useTasks';
+import { useCurrentDate } from './useSettings';
 import type { Task, PrimeOffset } from '@/types';
 import { toast } from 'sonner';
 
 export const useReminders = () => {
-  const { data: tasks = [] } = useTasks();
+  const { currentDate } = useCurrentDate();
+  const { data: tasks = [] } = useTasks(undefined, currentDate);
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Clear all existing timers

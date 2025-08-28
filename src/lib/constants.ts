@@ -1,6 +1,16 @@
-import type { Task, RewardRule, Settings, Routine, DailyRoutine } from '@/types';
+import type { Task, RewardRule, Settings, Routine, DailyRoutine, ParentUser, ChildUser } from '@/types';
 
 export const STORAGE_KEY = 'nextstep:v3'; // Updated to force fresh data with template system
+
+// Seed users
+export const SEED_PARENT: ParentUser = {
+  id: 'p1',
+  name: 'Parent',
+};
+
+export const SEED_CHILDREN: ChildUser[] = [
+  { id: 'c1', name: 'Kiddo', emoji: '🧒', parentId: 'p1' },
+];
 
 export const DEFAULT_SETTINGS: Settings = {
   mode: 'child',
@@ -8,12 +18,15 @@ export const DEFAULT_SETTINGS: Settings = {
   storageMode: 'local',
   userRole: 'child',
   currentRoutineId: 'r1',
+  currentChildId: 'c1',
   // currentDate will be set dynamically in useCurrentDate hook
 };
 
 export const SEED_ROUTINES: Routine[] = [
   {
     id: 'r1',
+    ownerId: 'p1',
+    childId: 'c1',
     name: 'Morning Routine',
     emoji: '🌅',
     color: '#fbbf24',
@@ -24,6 +37,8 @@ export const SEED_ROUTINES: Routine[] = [
   },
   {
     id: 'r2',
+    ownerId: 'p1',
+    childId: 'c1',
     name: 'After School',
     emoji: '🏠',
     color: '#60a5fa',
@@ -34,6 +49,8 @@ export const SEED_ROUTINES: Routine[] = [
   },
   {
     id: 'r3',
+    ownerId: 'p1',
+    childId: 'c1',
     name: 'Bedtime Routine',
     emoji: '🌙',
     color: '#a78bfa',
@@ -57,6 +74,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't1',
     routineId: 'r1',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Brush Teeth',
     emoji: '🪥',
     done: false,
@@ -70,6 +89,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't2',
     routineId: 'r1',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Get Dressed',
     emoji: '👕',
     done: false,
@@ -83,6 +104,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't3',
     routineId: 'r1',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Eat Breakfast',
     emoji: '🥣',
     done: false,
@@ -95,6 +118,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't4',
     routineId: 'r1',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Pack School Bag',
     emoji: '🎒',
     done: false,
@@ -108,6 +133,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't5',
     routineId: 'r2',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Hang Up Backpack',
     emoji: '🎒',
     done: false,
@@ -119,6 +146,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't6',
     routineId: 'r2',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Wash Hands',
     emoji: '🧼',
     done: false,
@@ -130,6 +159,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't7',
     routineId: 'r2',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Have Snack',
     emoji: '🍎',
     done: false,
@@ -141,6 +172,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't8',
     routineId: 'r3',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Put on Pajamas',
     emoji: '👘',
     done: false,
@@ -153,6 +186,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't9',
     routineId: 'r3',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Brush Teeth',
     emoji: '🪥',
     done: false,
@@ -166,6 +201,8 @@ export const SEED_TASK_TEMPLATES: Task[] = [
   {
     id: 't10',
     routineId: 'r3',
+    ownerId: 'p1',
+    childId: 'c1',
     title: 'Read Story',
     emoji: '📖',
     done: false,
@@ -207,11 +244,13 @@ export const SEED_DAILY_ROUTINES: DailyRoutine[] = [
 export const SEED_REWARDS: RewardRule[] = [
   {
     id: 'r1',
+    ownerId: 'p1',
     name: 'Choose a snack',
     cost: 5,
   },
   {
     id: 'r2',
+    ownerId: 'p1',
     name: 'Extra 15 minutes of screen time',
     cost: 10,
   },
@@ -222,7 +261,7 @@ export const SEED_TASKS = SEED_TASK_TEMPLATES;
 
 export const STAR_THRESHOLDS = [5, 10, 20, 50];
 
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3001/api';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 export const DEFAULT_STORAGE_MODE = (import.meta.env.VITE_STORAGE_MODE as 'api' | 'local') || 'local';
 
 export const TODAY = today;

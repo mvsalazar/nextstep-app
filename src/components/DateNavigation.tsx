@@ -8,6 +8,13 @@ interface DateNavigationProps {
 }
 
 export function DateNavigation({ currentDate, onDateChange }: DateNavigationProps) {
+  const toLocalYmd = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
   const formatDisplayDate = (dateStr: string) => {
     // Parse the YYYY-MM-DD date string correctly for local timezone
     const [year, month, day] = dateStr.split('-').map(Number);
@@ -41,13 +48,11 @@ export function DateNavigation({ currentDate, onDateChange }: DateNavigationProp
   };
 
   const navigateDate = (direction: "prev" | "next") => {
-    const date = new Date(currentDate);
-    if (direction === "prev") {
-      date.setDate(date.getDate() - 1);
-    } else {
-      date.setDate(date.getDate() + 1);
-    }
-    onDateChange(date.toISOString().split('T')[0]);
+    // Compute next/prev date in local time to avoid UTC shifts
+    const [year, month, day] = currentDate.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    date.setDate(date.getDate() + (direction === 'prev' ? -1 : 1));
+    onDateChange(toLocalYmd(date));
   };
 
   const goToToday = () => {

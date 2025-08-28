@@ -7,7 +7,7 @@ import { useTasks, useUpdateTask, useTaskProgress, useNextTask } from '@/hooks/u
 import { useUpdateStars } from '@/hooks/useRewards';
 import { useReminders } from '@/hooks/useReminders';
 import { useUiStore } from '@/store/ui';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { HeaderBar } from '@/components/HeaderBar';
 import { ProgressBar } from '@/components/ProgressBar';
 import { NextUp } from '@/components/NextUp';
@@ -21,47 +21,54 @@ import { TaskEditModal } from '@/components/TaskEditModal';
 import { DateNavigation } from '@/components/DateNavigation';
 import { RoutineSelector } from '@/components/RoutineSelector';
 import { cn } from '@/lib/utils';
+import { useRoutines } from '@/hooks/useRoutines';
+import { useAuth } from '@/hooks/useAuth';
+import { AuthScreen } from '@/components/AuthScreen';
+import { DebugBanner } from '@/components/DebugBanner';
 
 function AppContent() {
   const { data: settings } = useSettings();
   const { currentDate, setCurrentDate } = useCurrentDate();
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
 
-  // Smart routine selection based on time of day
-  const getSmartRoutineId = () => {
+  const { routines } = useRoutines();
+
+  // Smart routine selection based on time of day using routine names
+  const smartRoutineId = useMemo(() => {
+    if (!routines || routines.length === 0) return undefined;
     const now = new Date();
     const hour = now.getHours();
-    
-    // Morning routine: 5 AM - 11 AM
-    if (hour >= 5 && hour < 11) {
-      return 'r1'; // Morning Routine
-    }
-    // After school routine: 2 PM - 6 PM  
-    else if (hour >= 14 && hour < 18) {
-      return 'r2'; // After School
-    }
-    // Bedtime routine: 7 PM - 10 PM
-    else if (hour >= 19 && hour <= 22) {
-      return 'r3'; // Bedtime Routine
-    }
-    // Default to morning routine
-    else {
-      return 'r1';
-    }
-  };
-  
-  const smartRoutineId = getSmartRoutineId();
+    const findByName = (namePart: string) =>
+      routines.find((r) => r.name.toLowerCase().includes(namePart))?.id;
+    const byIndex = (idx: number) => routines[Math.min(idx, routines.length - 1)]?.id;
+
+    const morningId = findByName('morning') || byIndex(0);
+    const afterId = findByName('after') || findByName('school') || byIndex(1);
+    const bedtimeId = findByName('bedtime') || findByName('bed') || byIndex(2);
+
+    // Time windows:
+    // 00:00–04:59 => Bedtime (late night)
+    // 05:00–10:59 => Morning
+    // 11:00–18:59 => After School
+    // 19:00–23:59 => Bedtime
+    if (hour < 5) return bedtimeId;
+    if (hour < 11) return morningId;
+    if (hour < 19) return afterId;
+    return bedtimeId;
+  }, [routines]);
   
   // State for current routine (can be overridden by user)
-  const [currentRoutineId, setCurrentRoutineId] = useState<string>(smartRoutineId);
+  const [currentRoutineId, setCurrentRoutineId] = useState<string>(smartRoutineId || '');
   const [isSmartSelected, setIsSmartSelected] = useState(true);
   
   // Update routine when smart selection changes (e.g., time passes)
   useEffect(() => {
-    if (isSmartSelected) {
+    if (isSmartSelected && smartRoutineId) {
       setCurrentRoutineId(smartRoutineId);
     }
   }, [smartRoutineId, isSmartSelected]);
+
+  // Removed focus behavior; routine selection remains time-of-day based
   
   const handleRoutineChange = (routineId: string) => {
     setCurrentRoutineId(routineId);
@@ -123,6 +130,7 @@ function AppContent() {
         <ProgressBar progress={progress.progress} />
         <NextUp 
           task={nextTask}
+          taskCount={tasks.length}
           onToggleTask={handleTaskToggle}
           onEditTask={(id) => console.log('Edit task:', id)}
         />
@@ -152,14 +160,21 @@ function AppContent() {
         onClose={() => setTaskEditOpen(false)}
       />
       <Toaster position="top-center" />
+      {import.meta.env.DEV && <DebugBanner />}
     </div>
   );
 }
 
+const AuthOrApp = () => {
+  const { storageMode, isAuthenticated } = useAuth();
+  if (storageMode === 'api' && !isAuthenticated) return <AuthScreen />;
+  return <AppContent />;
+};
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppContent />
+      <AuthOrApp />
       <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
   );

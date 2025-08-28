@@ -10,10 +10,12 @@ export const useTasks = (routineId?: string, date?: string) => {
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiTasks : localTasks;
+  const childId = settings?.currentChildId || 'default-child';
 
   return useQuery({
-    queryKey: ['tasks', routineId, date],
-    queryFn: () => adapter.getTasks(routineId, date),
+    queryKey: ['tasks', storageMode, childId, routineId, date],
+    queryFn: () => adapter.getTasks(routineId, date, childId),
+    enabled: storageMode !== 'api' ? Boolean(date) : Boolean(date && childId),
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };

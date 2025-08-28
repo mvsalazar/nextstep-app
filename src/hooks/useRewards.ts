@@ -24,10 +24,11 @@ export const useStars = () => {
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiRewards : localRewards;
+  const childId = settings?.currentChildId || 'default-child';
 
   return useQuery({
-    queryKey: ['stars'],
-    queryFn: adapter.getStars,
+    queryKey: ['stars', childId],
+    queryFn: () => adapter.getStars(childId),
     staleTime: 1000 * 30, // 30 seconds
   });
 };
@@ -40,14 +41,14 @@ export const useUpdateStars = () => {
   const showCelebrationModal = useUiStore((state) => state.showCelebrationModal);
 
   return useMutation({
-    mutationFn: (delta: number) => adapter.updateStars(delta),
+    mutationFn: (delta: number) => adapter.updateStars(delta, settings?.currentChildId || undefined),
     onMutate: async (_delta) => {
       // Optimistic update
-      await queryClient.cancelQueries({ queryKey: ['stars'] });
-      const previousStars = queryClient.getQueryData(['stars']) as number;
+      await queryClient.cancelQueries({ queryKey: ['stars', settings?.currentChildId] });
+      const previousStars = queryClient.getQueryData(['stars', settings?.currentChildId]) as number;
       const newStars = Math.max(0, previousStars + _delta);
       
-      queryClient.setQueryData(['stars'], newStars);
+      queryClient.setQueryData(['stars', settings?.currentChildId], newStars);
       
       // Check for celebration thresholds (only for positive deltas in child mode)
       if (_delta > 0 && settings?.mode === 'child') {
@@ -65,7 +66,7 @@ export const useUpdateStars = () => {
     onError: (error, _delta, context) => {
       // Rollback on error
       if (context?.previousStars !== undefined) {
-        queryClient.setQueryData(['stars'], context.previousStars);
+        queryClient.setQueryData(['stars', settings?.currentChildId], context.previousStars);
       }
       console.error('Failed to update stars:', error);
     },

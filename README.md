@@ -50,7 +50,7 @@ Create a `.env` file in the root directory:
 
 ```env
 # API Configuration (optional)
-VITE_API_BASE_URL=http://localhost:3001/api
+VITE_API_BASE_URL=http://localhost:8080/api
 
 # Default storage mode ('local' or 'api')
 VITE_STORAGE_MODE=local

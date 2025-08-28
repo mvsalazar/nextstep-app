@@ -2,11 +2,14 @@ import { useState } from 'react';
 import { Download, Upload } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useSettings, useUpdateSettings } from '@/hooks/useSettings';
+import { useAuth } from '@/hooks/useAuth';
 import { useUiStore } from '@/store/ui';
+import { useChildren } from '@/hooks/useUsers';
 import { toast } from 'sonner';
 import { loadAppState, saveAppState } from '@/adapters/local/storage';
 
@@ -14,7 +17,11 @@ export const SettingsSheet = () => {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
   const { isSettingsOpen, setSettingsOpen } = useUiStore();
+  const { storageMode, isAuthenticated, logout, user } = useAuth();
   const [importing, setImporting] = useState(false);
+  const { children, createChild, deleteChild, updateChild, isCreating, isDeleting, isUpdating } = useChildren();
+  const [newChildName, setNewChildName] = useState('');
+  const [editNames, setEditNames] = useState<Record<string, string>>({});
 
   const handleModeChange = (isChild: boolean) => {
     updateSettings.mutate({ mode: isChild ? 'child' : 'adult' });
@@ -36,6 +43,23 @@ export const SettingsSheet = () => {
     });
     if (userRole === 'child') {
       toast.success('Switched back to child mode');
+    }
+  };
+
+  const handleActiveChildChange = (childId: string) => {
+    updateSettings.mutate({ currentChildId: childId });
+  };
+
+  const handleAddChild = async () => {
+    const name = newChildName.trim();
+    if (!name) return;
+    try {
+      const child = await createChild({ name });
+      updateSettings.mutate({ currentChildId: child.id });
+      setNewChildName('');
+      toast.success('Child added');
+    } catch {
+      toast.error('Failed to add child');
     }
   };
 
@@ -96,7 +120,80 @@ export const SettingsSheet = () => {
           <SheetTitle>Settings</SheetTitle>
         </SheetHeader>
 
-        <div className="space-y-6 py-6 px-6">
+        <div className="flex-1 min-h-0 overflow-y-auto space-y-6 py-6 px-6">
+          {/* Active Child */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Active Child</Label>
+            <Select value={settings.currentChildId || undefined} onValueChange={handleActiveChildChange}>
+              <SelectTrigger>
+                <SelectValue>
+                  {children.find(c => c.id === settings.currentChildId)?.name || 'Select a child'}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {children.map(c => (
+                  <SelectItem key={c.id} value={c.id}>{c.emoji ? `${c.emoji} ` : ''}{c.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-gray-500">Data views and actions apply to this child.</p>
+          </div>
+
+          {/* Manage Children */}
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Manage Children</Label>
+            <div className="flex gap-2">
+              <Input
+                placeholder="Child name"
+                value={newChildName}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewChildName(e.target.value)}
+                disabled={storageMode === 'api' && !isAuthenticated}
+              />
+              <Button onClick={handleAddChild} disabled={isCreating || !newChildName.trim() || (storageMode === 'api' && !isAuthenticated)}>
+                Add
+              </Button>
+            </div>
+            {storageMode === 'api' && !isAuthenticated && (
+              <p className="text-xs text-gray-500">Sign in to manage children when using API mode.</p>
+            )}
+            {children.length > 0 && (
+              <div className="space-y-2">
+                {children.map(c => (
+                  <div key={c.id} className="flex items-center gap-2 text-sm">
+                    <span className="text-lg">{c.emoji ? `${c.emoji}` : '🧒'}</span>
+                    <Input
+                      className="h-8"
+                      value={editNames[c.id] ?? c.name}
+                      onChange={(e) => setEditNames(prev => ({ ...prev, [c.id]: e.target.value }))}
+                      disabled={storageMode === 'api' && !isAuthenticated}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isUpdating || (storageMode === 'api' && !isAuthenticated) || (editNames[c.id]?.trim() || c.name) === c.name}
+                      onClick={async () => {
+                        const name = (editNames[c.id] ?? c.name).trim();
+                        if (!name) return;
+                        await updateChild({ id: c.id, updates: { name } });
+                      }}
+                    >
+                      Save
+                    </Button>
+                    <div className="ml-auto">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        disabled={isDeleting || (settings.currentChildId === c.id && children.length === 1) || (storageMode === 'api' && !isAuthenticated)}
+                        onClick={() => deleteChild(c.id)}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {/* User Role */}
           <div className="space-y-3">
             <Label className="text-base font-medium">User Role</Label>
@@ -224,16 +321,24 @@ export const SettingsSheet = () => {
               </p>
             </div>
           )}
+          {/* Account (API mode) */}
+          {storageMode === 'api' && (
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Account</Label>
+              {isAuthenticated ? (
+                <>
+                  <p className="text-sm">Signed in as <span className="font-medium">{user?.email}</span></p>
+                  <Button variant="outline" onClick={() => logout()} className="w-full">Sign out</Button>
+                </>
+              ) : (
+                <p className="text-sm text-gray-600">Not signed in</p>
+              )}
+              <p className="text-xs text-gray-500">Account applies only in API mode. Local mode does not require sign in.</p>
+            </div>
+          )}
         </div>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setSettingsOpen(false)}
-          className="absolute right-4 top-4 p-2"
-          aria-label="Close settings"
-        >
-        </Button>
+        {/* Close button provided by SheetContent */}
       </SheetContent>
     </Sheet>
   );

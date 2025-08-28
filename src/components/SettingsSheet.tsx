@@ -27,7 +27,7 @@ export const SettingsSheet = () => {
     updateSettings.mutate({ mode: isChild ? 'child' : 'adult' });
   };
 
-  const handleThemeChange = (theme: 'light' | 'lowstim') => {
+  const handleThemeChange = (theme: 'light' | 'lowstim' | 'dark') => {
     updateSettings.mutate({ theme });
   };
 
@@ -253,18 +253,19 @@ export const SettingsSheet = () => {
                 <SelectValue>
                   {settings.theme === 'light' && 'Light Theme'}
                   {settings.theme === 'lowstim' && 'Low-Stim Theme'}
+                  {settings.theme === 'dark' && 'Dark Theme'}
                 </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="light">Light Theme</SelectItem>
                 <SelectItem value="lowstim">Low-Stim Theme</SelectItem>
+                <SelectItem value="dark">Dark Theme</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-gray-500">
-              {settings.theme === 'light' 
-                ? 'Standard colorful interface' 
-                : 'Muted colors with reduced animations'
-              }
+              {settings.theme === 'light' && 'Standard, color-friendly interface'}
+              {settings.theme === 'lowstim' && 'Muted colors with reduced animations'}
+              {settings.theme === 'dark' && 'High-contrast dark theme optimized for readability'}
             </p>
           </div>
 

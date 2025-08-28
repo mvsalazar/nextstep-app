@@ -57,7 +57,7 @@ export type UserRole = "child" | "parent" | "guardian";
 
 export type Settings = {
   mode: "child" | "adult";
-  theme: "light" | "lowstim";
+  theme: "light" | "lowstim" | "dark";
   storageMode: "api" | "local";
   userRole: UserRole;
   adminPin?: string;

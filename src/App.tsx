@@ -110,9 +110,17 @@ function AppContent() {
   };
 
   const isLowStim = settings?.theme === 'lowstim';
+  const isDark = settings?.theme === 'dark';
+  
+  // Apply theme classes to the root html element for full-scope CSS variables
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDark) root.classList.add('dark'); else root.classList.remove('dark');
+    if (isLowStim) root.classList.add('low-stim'); else root.classList.remove('low-stim');
+  }, [isDark, isLowStim]);
 
   return (
-    <div className={cn('min-h-screen', isLowStim && 'low-stim')}>
+    <div className={cn('min-h-screen')}>
       <HeaderBar />
       {canAccessAdmin && (
         <DateNavigation 

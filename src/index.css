@@ -61,6 +61,43 @@
     min-height: 100vh;
   }
 
+  /* Dark theme (accessibility-focused) */
+  .dark {
+    --background: 215 28% 10%; /* near-black blue-gray #0f1620 */
+    --foreground: 210 20% 96%; /* off-white #eff3f6 */
+    --surface: 215 20% 14%;
+
+    --card: 215 20% 14%;
+    --card-foreground: 210 20% 96%;
+
+    --popover: 215 20% 14%;
+    --popover-foreground: 210 20% 96%;
+
+    /* High-contrast primary */
+    --primary: 200 100% 45%; /* vivid accessible blue #1e90ff */
+    --primary-foreground: 0 0% 100%;
+
+    /* Muted accents tuned for contrast */
+    --secondary: 215 14% 28%;
+    --secondary-foreground: 210 20% 96%;
+    --accent: 215 14% 28%;
+    --accent-foreground: 210 20% 96%;
+
+    --muted: 215 14% 18%;
+    --muted-foreground: 210 12% 72%;
+
+    --border: 215 14% 22%;
+    --input: 215 14% 22%;
+
+    /* Feedback */
+    --success: 152 60% 40%; /* accessible green */
+    --warning: 45 100% 50%; /* amber */
+    --destructive: 0 75% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --ring: 200 100% 45%;
+  }
+
   /* Focus styles for accessibility */
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-ring;
@@ -91,9 +128,8 @@
     --warning: 43 38% 45%;
   }
 
-  /* App container */
+  /* App container inherits body background */
   #root {
     min-height: 100vh;
-    background-color: hsl(var(--background));
   }
 }

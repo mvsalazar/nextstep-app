@@ -62,7 +62,7 @@ export const CelebrationModal = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="text-2xl font-bold text-gray-900 mb-2"
+            className="text-2xl font-bold text-foreground mb-2"
           >
             {celebrationStars} Stars Reached!
           </motion.h2>
@@ -71,7 +71,7 @@ export const CelebrationModal = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-lg text-gray-700 mb-2"
+            className="text-lg text-foreground mb-2"
           >
             {getMessage(celebrationStars)}
           </motion.p>
@@ -80,7 +80,7 @@ export const CelebrationModal = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
-            className="text-sm text-gray-600 mb-6"
+            className="text-sm text-muted-foreground mb-6"
           >
             {getRewardMessage(celebrationStars)}
           </motion.p>

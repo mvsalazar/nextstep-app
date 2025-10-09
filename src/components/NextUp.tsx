@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNextTask } from '@/hooks/useTasks';
 import { useSettings } from '@/hooks/useSettings';
+import { useUiStore } from '@/store/ui';
 import { TaskCard } from './TaskCard';
 import type { Task } from '@/types';
 
@@ -15,6 +16,8 @@ interface NextUpProps {
 export const NextUp = ({ task: propTask, onToggleTask, onEditTask, taskCount }: NextUpProps) => {
   const hookNextTask = useNextTask();
   const { data: settings } = useSettings();
+  const setTaskEditOpen = useUiStore((state) => state.setTaskEditOpen);
+  const setSelectedTaskId = useUiStore((state) => state.setSelectedTaskId);
   const nextTask = propTask !== undefined ? propTask : hookNextTask;
   const hasTasks = taskCount === undefined ? true : taskCount > 0;
   
@@ -26,6 +29,8 @@ export const NextUp = ({ task: propTask, onToggleTask, onEditTask, taskCount }: 
     if (!isParentMode) {
       return;
     }
+    setSelectedTaskId(id);
+    setTaskEditOpen(true);
     if (onEditTask) onEditTask(id);
   };
 

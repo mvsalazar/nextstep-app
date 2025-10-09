@@ -1,15 +1,14 @@
 import { motion } from 'framer-motion';
 import { Progress } from '@/components/ui/progress';
-import { useTaskProgress } from '@/hooks/useTasks';
 
 interface ProgressBarProps {
   className?: string;
-  progress?: number;
+  progress: number;
+  completedCount: number;
+  totalCount: number;
 }
 
-export const ProgressBar = ({ className, progress: propProgress }: ProgressBarProps) => {
-  const { progress: hookProgress, completedCount, totalCount } = useTaskProgress();
-  const progress = propProgress !== undefined ? propProgress : hookProgress;
+export const ProgressBar = ({ className, progress, completedCount, totalCount }: ProgressBarProps) => {
 
   return (
     <div className={className}>

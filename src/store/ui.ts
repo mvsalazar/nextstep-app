@@ -10,6 +10,9 @@ interface UiState {
   showCelebration: boolean;
   celebrationStars: number;
   isKeyboardHelpOpen: boolean;
+  // Quick on-press micro celebration (e.g., 🎉 overlay)
+  showMicroCelebration: boolean;
+  microEmoji: string;
 }
 
 interface UiActions {
@@ -22,6 +25,8 @@ interface UiActions {
   showCelebrationModal: (stars: number) => void;
   hideCelebration: () => void;
   setKeyboardHelpOpen: (open: boolean) => void;
+  triggerMicroCelebration: (emoji?: string) => void;
+  hideMicroCelebration: () => void;
 }
 
 export const useUiStore = create<UiState & UiActions>((set) => ({
@@ -35,6 +40,8 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   showCelebration: false,
   celebrationStars: 0,
   isKeyboardHelpOpen: false,
+  showMicroCelebration: false,
+  microEmoji: '🎉',
 
   // Actions
   setSelectedTaskId: (id) => set({ selectedTaskId: id }),
@@ -46,4 +53,6 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   showCelebrationModal: (stars) => set({ showCelebration: true, celebrationStars: stars }),
   hideCelebration: () => set({ showCelebration: false, celebrationStars: 0 }),
   setKeyboardHelpOpen: (open) => set({ isKeyboardHelpOpen: open }),
+  triggerMicroCelebration: (emoji) => set({ showMicroCelebration: true, microEmoji: emoji || '🎉' }),
+  hideMicroCelebration: () => set({ showMicroCelebration: false }),
 }));

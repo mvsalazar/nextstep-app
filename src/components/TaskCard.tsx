@@ -4,6 +4,9 @@ import type { Task } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { fireFeedback, shouldReduceMotion, playTada, haptic } from '@/lib/feedback';
+import { useUiStore } from '@/store/ui';
+import { useState } from 'react';
 
 interface TaskCardProps {
   task: Task;
@@ -24,8 +27,33 @@ export const TaskCard = ({
   isEditable = true,
   className 
 }: TaskCardProps) => {
-  const handleToggle = () => {
-    onToggle(task.id, !task.done);
+  const [showBurst, setShowBurst] = useState(false);
+  const [iconPop, setIconPop] = useState(false);
+  const [liveMsg, setLiveMsg] = useState('');
+  const { triggerMicroCelebration } = useUiStore();
+  const handleToggle = (buttonEl?: HTMLButtonElement | null) => {
+    const next = !task.done;
+    // Blur to avoid focus jumping to other elements
+    buttonEl?.blur?.();
+    // Trigger feedback and local animation before state update (so the card isn't removed immediately)
+    if (next) {
+      playTada();
+      haptic([18, 20, 15]);
+      triggerMicroCelebration('🎉');
+    } else {
+      fireFeedback(false);
+    }
+    setLiveMsg(`${task.title} ${next ? 'marked done' : 'marked not done'}`);
+    const animateFirst = next && !shouldReduceMotion();
+    if (animateFirst) {
+      setShowBurst(true);
+      setIconPop(true);
+      setTimeout(() => setShowBurst(false), 500);
+      setTimeout(() => setIconPop(false), 250);
+    }
+    // Slight delay lets animation/beep register before list re-renders
+    const delay = animateFirst ? 140 : 0;
+    setTimeout(() => onToggle(task.id, next), delay);
   };
 
   const formatTime = (time: string) => {
@@ -86,35 +114,71 @@ export const TaskCard = ({
                 </div>
               </div>
             </div>
-            <motion.div
+            <motion.div className="relative"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
               <Button
-                variant={task.done ? 'default' : 'outline'}
+                variant={task.done ? 'outline' : 'outline'}
                 size="sm"
                 onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
                   e.stopPropagation();
-                  handleToggle();
+                  handleToggle(e.currentTarget);
                 }}
                 className={cn(
-                  'ml-3 flex-shrink-0',
-                  task.done && 'bg-success hover:bg-success/90 text-white border-success'
+                  'ml-3 flex-shrink-0 rounded-md h-9 px-3 py-2 shadow-xs border focus-visible:ring-ring focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:outline-none',
+                  task.done
+                    ? 'bg-card text-success border-success hover:bg-success/10'
+                    : 'bg-primary text-primary-foreground border-primary/70 hover:bg-primary/90'
                 )}
+                aria-pressed={task.done}
                 aria-label={task.done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
               >
-                <CheckCircle2 
-                  className={cn(
-                    'h-4 w-4',
-                    task.done ? 'text-white' : 'text-muted-foreground'
-                  )} 
-                />
+                <motion.span
+                  initial={false}
+                  animate={iconPop ? { scale: [1, 1.25, 1] } : { scale: 1 }}
+                  transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
+                  className="inline-flex items-center"
+                >
+                  <CheckCircle2 
+                    className={cn(
+                      'h-4 w-4',
+                      task.done ? 'text-success' : 'text-primary-foreground'
+                    )} 
+                    fill={'none'}
+                  />
+                </motion.span>
                 {task.done ? 'Done' : 'Mark Done'}
               </Button>
+
+              {showBurst && (
+                <>
+                  <motion.span
+                    aria-hidden
+                    initial={{ opacity: 0.35, scale: 0.9 }}
+                    animate={{ opacity: 0, scale: 1.5 }}
+                    transition={{ type: 'tween', duration: 0.4, ease: 'easeOut' }}
+                    className={cn('pointer-events-none absolute inset-0 m-auto h-9 w-[5.5rem] rounded-md blur-sm',
+                      task.done ? 'bg-success/20' : 'bg-primary/25'
+                    )}
+                  />
+                  <motion.span
+                    aria-hidden
+                    initial={{ opacity: 0.6, scale: 0.8 }}
+                    animate={{ opacity: 0, scale: 1.6 }}
+                    transition={{ type: 'tween', duration: 0.45, ease: 'easeOut' }}
+                    className={cn('pointer-events-none absolute inset-0 m-auto h-9 w-[5.5rem] rounded-md border-2',
+                      task.done ? 'border-success/70' : 'border-primary/70'
+                    )}
+                  />
+                </>
+              )}
             </motion.div>
           </div>
         </CardContent>
       </Card>
+      {/* SR live region for confirmation */}
+      <span aria-live="polite" className="sr-only">{liveMsg}</span>
     </motion.div>
   );
 };

@@ -244,7 +244,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
                   <Card className="p-4 hover:shadow-md transition-shadow">
                     <div className="flex items-center gap-4">
                       <div className="cursor-grab">
-                        <GripVertical className="h-5 w-5 text-slate-400" />
+                        <GripVertical className="h-5 w-5 text-muted-foreground" />
                       </div>
 
                       <div 
@@ -256,7 +256,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
 
                       <div className="flex-1">
                         <h3 className="font-semibold text-lg">{routine.name}</h3>
-                        <div className="flex items-center gap-4 text-sm text-slate-600">
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <span>{stats.total} tasks</span>
                           <div className="flex items-center gap-1">
                             <CheckCircle2 className="h-4 w-4" />
@@ -296,7 +296,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
           </div>
 
           {routines.length === 0 && (
-            <div className="text-center py-8 text-slate-500">
+            <div className="text-center py-8 text-muted-foreground">
               No routines yet. Create your first routine to get started!
             </div>
           )}

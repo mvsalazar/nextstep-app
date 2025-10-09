@@ -15,7 +15,11 @@ export const useTasks = (routineId?: string, date?: string) => {
   return useQuery({
     queryKey: ['tasks', storageMode, childId, routineId, date],
     queryFn: () => adapter.getTasks(routineId, date, childId),
-    enabled: storageMode !== 'api' ? Boolean(date) : Boolean(date && childId),
+    // In API mode, the backend requires routineId + date + childId.
+    // In local mode, routineId can be optional when browsing templates, but we still need date for daily tasks.
+    enabled: storageMode !== 'api'
+      ? Boolean(date)
+      : Boolean(date && childId && routineId),
     staleTime: 1000 * 60 * 2, // 2 minutes
   });
 };
@@ -90,6 +94,27 @@ export const useReorderTasks = () => {
     },
     onError: (error) => {
       console.error('Failed to reorder tasks:', error);
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+    },
+  });
+};
+
+export const useCreateTemplate = () => {
+  const queryClient = useQueryClient();
+  const { data: settings } = useSettings();
+  const storageMode = settings?.storageMode || 'local';
+  const adapter = storageMode === 'api' ? apiTasks : localTasks;
+
+  return useMutation({
+    mutationFn: (templateData: Omit<Task, 'id' | 'updatedAt' | 'version'>) =>
+      (adapter as any).createTemplate(templateData),
+    onSuccess: () => {
+      // Invalidate task caches so next date generation or template views reflect changes
+      queryClient.invalidateQueries({ queryKey: ['tasks'] });
+      queryClient.invalidateQueries({ queryKey: ['templates'] });
+    },
+    onError: (error) => {
+      console.error('Failed to create template:', error);
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     },
   });

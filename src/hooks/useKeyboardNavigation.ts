@@ -10,6 +10,7 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
     setRewardsOpen, 
     setTaskEditOpen,
     setKeyboardHelpOpen,
+    isTaskEditOpen,
   } = useUiStore();
 
   const incompleteTasks = tasks.filter(task => !task.done);
@@ -127,6 +128,8 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
 
   // Auto-select first task if none selected and tasks exist
   useEffect(() => {
+    // Avoid auto-selecting while the Add/Edit Task modal is open
+    if (isTaskEditOpen) return;
     if (selectedTaskId === null && incompleteTasks.length > 0) {
       // Don't auto-select immediately to avoid conflicts with UI interactions
       const timer = setTimeout(() => {
@@ -134,7 +137,7 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
       }, 100);
       return () => clearTimeout(timer);
     }
-  }, [selectedTaskId, incompleteTasks, setSelectedTaskId]);
+  }, [selectedTaskId, incompleteTasks, setSelectedTaskId, isTaskEditOpen]);
 
   return {
     selectedTaskId,

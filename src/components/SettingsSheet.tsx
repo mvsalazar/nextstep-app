@@ -136,7 +136,7 @@ export const SettingsSheet = () => {
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">Data views and actions apply to this child.</p>
+            <p className="text-xs text-muted-foreground">Data views and actions apply to this child.</p>
           </div>
 
           {/* Manage Children */}
@@ -154,7 +154,7 @@ export const SettingsSheet = () => {
               </Button>
             </div>
             {storageMode === 'api' && !isAuthenticated && (
-              <p className="text-xs text-gray-500">Sign in to manage children when using API mode.</p>
+              <p className="text-xs text-muted-foreground">Sign in to manage children when using API mode.</p>
             )}
             {children.length > 0 && (
               <div className="space-y-2">
@@ -211,7 +211,7 @@ export const SettingsSheet = () => {
                 <SelectItem value="guardian">Guardian</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {settings.userRole === 'child' 
                 ? 'Child interface with rewards and simple controls' 
                 : 'Parent/Guardian interface with full management access'
@@ -225,10 +225,10 @@ export const SettingsSheet = () => {
               <Label className="text-base font-medium">Interface Mode</Label>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1">
-                  <p className="text-sm text-gray-600">
+                  <p className="text-sm text-muted-foreground">
                     {settings.mode === 'child' ? 'Child Mode' : 'Adult Mode'}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-muted-foreground mt-1">
                     {settings.mode === 'child' 
                       ? 'Shows stars and celebrations' 
                       : 'Minimal interface without rewards'
@@ -262,7 +262,7 @@ export const SettingsSheet = () => {
                 <SelectItem value="dark">Dark Theme</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {settings.theme === 'light' && 'Standard, color-friendly interface'}
               {settings.theme === 'lowstim' && 'Muted colors with reduced animations'}
               {settings.theme === 'dark' && 'High-contrast dark theme optimized for readability'}
@@ -284,7 +284,7 @@ export const SettingsSheet = () => {
                 <SelectItem value="api">API Server</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               {settings.storageMode === 'local' 
                 ? 'Data saved in browser storage' 
                 : 'Data synced with remote server'
@@ -317,7 +317,7 @@ export const SettingsSheet = () => {
                   {importing ? 'Importing...' : 'Import'}
                 </Button>
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 Export your data as a backup or import from a previous backup
               </p>
             </div>
@@ -332,9 +332,9 @@ export const SettingsSheet = () => {
                   <Button variant="outline" onClick={() => logout()} className="w-full">Sign out</Button>
                 </>
               ) : (
-                <p className="text-sm text-gray-600">Not signed in</p>
+                <p className="text-sm text-muted-foreground">Not signed in</p>
               )}
-              <p className="text-xs text-gray-500">Account applies only in API mode. Local mode does not require sign in.</p>
+              <p className="text-xs text-muted-foreground">Account applies only in API mode. Local mode does not require sign in.</p>
             </div>
           )}
         </div>

@@ -12,12 +12,14 @@ interface TaskListProps {
   tasks?: Task[];
   onToggleTask: (id: string, done: boolean) => void;
   onEditTask?: (id: string) => void;
+  isLoading?: boolean;
 }
 
-export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskListProps) => {
-  const { data: hookTasks = [] } = useTasks();
+export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading: propLoading }: TaskListProps) => {
+  const { data: hookTasks = [], isLoading: hookLoading } = useTasks();
   const { data: settings } = useSettings();
   const tasks = propTasks !== undefined ? propTasks : hookTasks;
+  const isLoading = propLoading ?? hookLoading;
   const setTaskEditOpen = useUiStore((state) => state.setTaskEditOpen);
   const setSelectedTaskId = useUiStore((state) => state.setSelectedTaskId);
   
@@ -38,6 +40,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
       return;
     }
     setSelectedTaskId(id);
+    setTaskEditOpen(true);
     if (onEditTask) onEditTask(id);
   };
 
@@ -45,7 +48,29 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
   const completedTasks = tasks.filter(task => task.done);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" aria-busy={isLoading || undefined}>
+      {/* Loading skeletons */}
+      {isLoading && (
+        <div className="space-y-3" aria-hidden>
+          {[1,2,3].map((i) => (
+            <div key={i} className="animate-pulse rounded-lg border border-input bg-card p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="h-8 w-8 rounded-full bg-muted" />
+                  <div className="flex-1 space-y-2">
+                    <div className="h-4 w-40 bg-muted rounded" />
+                    <div className="h-3 w-24 bg-muted rounded" />
+                  </div>
+                </div>
+                <div className="h-9 w-24 bg-muted rounded" />
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+      {isLoading && (
+        <span className="sr-only" role="status" aria-live="polite">Loading tasks…</span>
+      )}
       {/* Add Task Button - Only for Parents/Guardians */}
       {isParentMode && (
         <div className="text-center">
@@ -62,7 +87,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
       )}
 
       {/* Incomplete Tasks */}
-      {incompleteTasks.length > 0 && (
+      {!isLoading && incompleteTasks.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-3">
             To Do ({incompleteTasks.length})
@@ -85,7 +110,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
       )}
 
       {/* Completed Tasks */}
-      {completedTasks.length > 0 && (
+      {!isLoading && completedTasks.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-3">
             Completed ({completedTasks.length})
@@ -107,7 +132,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask }: TaskLis
       )}
 
       {/* Empty State */}
-      {tasks.length === 0 && (
+      {!isLoading && tasks.length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

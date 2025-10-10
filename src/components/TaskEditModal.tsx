@@ -1,14 +1,15 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Save, X, Clock, Bell } from 'lucide-react';
+import { Save, X, Clock, Bell, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useCreateTask, useUpdateTask } from '@/hooks/useTasks';
+import { useCreateTask, useUpdateTask, useCreateTemplate, useDeleteTask } from '@/hooks/useTasks';
 import { useSettings } from '@/hooks/useSettings';
-// import { useUiStore } from '@/store/ui';
+import { toast } from 'sonner';
+
 import type { Task, PrimeOffset } from '@/types';
 
 const TASK_EMOJIS = [
@@ -37,10 +38,14 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
     dueTime: '',
     prime: [] as PrimeOffset[],
   });
+  const [saveAsTemplate, setSaveAsTemplate] = useState(false);
 
   const { data: settings } = useSettings();
   const createTask = useCreateTask();
+  const createTemplate = useCreateTemplate();
   const updateTask = useUpdateTask();
+  const deleteTask = useDeleteTask();
+
   // const { selectedTaskId } = useUiStore(); // TODO: Use for task selection
 
   const isEditing = !!task;
@@ -70,12 +75,10 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
     
     // Only allow parents/guardians to create new tasks
     if (!isEditing && !isParentMode) {
-      console.error('Only parents/guardians can create tasks');
+      toast.error('Only parents/guardians can create tasks');
       return;
     }
     
-    console.log('Add task');
-
     const taskData = {
       title: formData.title.trim(),
       emoji: formData.emoji,
@@ -96,11 +99,44 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
           updates: taskData,
         });
       } else {
+        // Optionally create a template for future days
+        if (saveAsTemplate) {
+          const tplData = {
+            title: formData.title.trim(),
+            emoji: formData.emoji,
+            dueTime: formData.dueTime || undefined,
+            prime: formData.prime.length > 0 ? formData.prime : undefined,
+            routineId: routineId,
+            childId: settings?.currentChildId || undefined,
+            done: false,
+            isTemplate: true,
+            order: 999,
+          } as Omit<Task, 'id' | 'updatedAt' | 'version'>;
+          try { await createTemplate.mutateAsync(tplData); } catch (e) { toast.warning('Template creation failed: ' + e); }
+        }
+
         await createTask.mutateAsync(taskData);
       }
       onClose();
     } catch (error) {
-      console.error('Failed to save task:', error);
+      toast.error('Failed to save task: ' + error)
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!task?.id) return;
+
+    if (!isParentMode) {
+      toast.warning('Only parents/guardians can delete tasks');
+      return;
+    }
+
+    try {
+      await deleteTask.mutateAsync(task.id);
+      toast.success('Deleted Task: ' + task.title);
+      onClose();
+    } catch (error) {
+      toast.error('Failed to delete task:' + error);
     }
   };
 
@@ -200,6 +236,23 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
             </div>
           )}
 
+          {/* Save as Template Toggle */}
+          {isParentMode && !isEditing && (
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex-1">
+                <Label className="text-sm">Save as template (recurring)</Label>
+                <p className="text-xs text-muted-foreground">Adds to this routine for future days</p>
+              </div>
+              <input
+                type="checkbox"
+                checked={saveAsTemplate}
+                onChange={(e) => setSaveAsTemplate(e.target.checked)}
+                aria-label="Save as template (recurring)"
+                className="h-4 w-4 accent-primary"
+              />
+            </div>
+          )}
+
           {/* Non-parent mode message */}
           {!isEditing && !isParentMode && (
             <div className="mt-4 p-3 bg-muted rounded-lg">
@@ -208,13 +261,12 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
               </p>
             </div>
           )}
-
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col gap-2 pt-4 sm:flex-row sm:flex-wrap">
             <Button
               onClick={handleSave}
-              disabled={!canSave || createTask.isPending || updateTask.isPending || (!isEditing && !isParentMode)}
-              className="flex-1"
+              disabled={!canSave || createTask.isPending || createTemplate.isPending || updateTask.isPending || (!isEditing && !isParentMode)}
+              className="w-full sm:flex-1"
             >
               {createTask.isPending || updateTask.isPending ? (
                 <motion.div
@@ -229,11 +281,32 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
                 </>
               )}
             </Button>
+            {isEditing && isParentMode && (
+              <Button
+                  variant="outline"
+                  onClick={handleDelete}
+                  disabled={deleteTask.isPending}
+                  className="w-full text-red-600 hover:text-red-700 sm:w-auto"
+                >
+                  {deleteTask.isPending ? (
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                      className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full"
+                    />
+                  ) : (
+                    <Trash2 className="h-4 w-4" />
+                  )}
+                  Delete Task
+                </Button>
+            )}
+              
             
             <Button
               variant="outline"
               onClick={onClose}
               disabled={createTask.isPending || updateTask.isPending}
+              className="w-full sm:w-auto"
             >
               <X className="h-4 w-4 mr-2" />
               Cancel

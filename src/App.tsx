@@ -25,6 +25,7 @@ import { useRoutines } from '@/hooks/useRoutines';
 import { useAuth } from '@/hooks/useAuth';
 import { AuthScreen } from '@/components/AuthScreen';
 import { DebugBanner } from '@/components/DebugBanner';
+import { MicroCelebration } from '@/components/MicroCelebration';
 
 function AppContent() {
   const { data: settings } = useSettings();
@@ -76,7 +77,7 @@ function AppContent() {
   };
   
   // Get tasks for the current routine and date
-  const { data: tasks = [] } = useTasks(currentRoutineId, currentDate);
+  const { data: tasks = [], isLoading: tasksLoading } = useTasks(currentRoutineId, currentDate);
   const progress = useTaskProgress(currentRoutineId, currentDate);
   const nextTask = useNextTask(currentRoutineId, currentDate);
   const updateTask = useUpdateTask();
@@ -135,7 +136,7 @@ function AppContent() {
       />
       
       <main className="max-w-md mx-auto px-4 py-6 space-y-6">
-        <ProgressBar progress={progress.progress} />
+        <ProgressBar progress={progress.progress} completedCount={progress.completedCount} totalCount={progress.totalCount} />
         <NextUp 
           task={nextTask}
           taskCount={tasks.length}
@@ -144,6 +145,7 @@ function AppContent() {
         />
         <TaskList 
           tasks={tasks}
+          isLoading={tasksLoading || !currentRoutineId}
           onToggleTask={handleTaskToggle}
           onEditTask={(id) => console.log('Edit task:', id)}
         />
@@ -168,6 +170,7 @@ function AppContent() {
         onClose={() => setTaskEditOpen(false)}
       />
       <Toaster position="top-center" />
+      <MicroCelebration />
       {import.meta.env.DEV && <DebugBanner />}
     </div>
   );
@@ -183,7 +186,7 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthOrApp />
-      <ReactQueryDevtools initialIsOpen={false} />
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
     </QueryClientProvider>
   );
 }

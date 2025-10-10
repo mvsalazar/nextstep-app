@@ -28,6 +28,22 @@ export const useSettings = () => {
   return useQuery({
     queryKey: ['settings', storageMode], // Include storageMode in query key
     queryFn: adapter.getSettings,
+    // Ensure the displayed storageMode matches the active adapter selection,
+    // even if the remote settings disagree (e.g., MSW defaults).
+    select: (s) => {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        const mirror = raw ? JSON.parse(raw) : {};
+        const mirroredDate = mirror?.settings?.currentDate;
+        return {
+          ...s,
+          storageMode,
+          currentDate: s.currentDate || mirroredDate || TODAY,
+        } as Settings;
+      } catch {
+        return { ...s, storageMode } as Settings;
+      }
+    },
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
@@ -85,10 +101,15 @@ export const useUpdateSettings = () => {
 export const useCurrentDate = () => {
   const { data: settings } = useSettings();
   const updateSettings = useUpdateSettings();
+  const queryClient = useQueryClient();
   
   const currentDate = settings?.currentDate || TODAY;
   
   const setCurrentDate = (date: string) => {
+    // Optimistically update local cache so UI responds immediately,
+    // then persist via the selected adapter.
+    const mode = settings?.storageMode || 'local';
+    queryClient.setQueryData(['settings', mode], (prev: any) => ({ ...(prev || {}), currentDate: date }));
     updateSettings.mutate({ currentDate: date });
   };
   

@@ -97,11 +97,11 @@ export const RewardsPanel = () => {
 
             {rewards.length === 0 ? (
               <div className="text-center py-8">
-                <Gift className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <Gift className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   No rewards yet
                 </h3>
-                <p className="text-gray-600 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Add some rewards to motivate completing tasks!
                 </p>
               </div>
@@ -112,10 +112,10 @@ export const RewardsPanel = () => {
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <h4 className="font-medium text-gray-900 truncate">
+                          <h4 className="font-medium text-foreground truncate">
                             {reward.name}
                           </h4>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             {reward.cost} ⭐
                           </p>
                         </div>

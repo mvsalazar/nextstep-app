@@ -5,23 +5,26 @@ export const shouldReduceMotion = () =>
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-const isAndroid = () => /Android/i.test(navigator.userAgent || '');
+const isAndroid = () => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent || '');
 
-export const haptic = (duration = 20) => {
+export const haptic = (duration: number | number[] = 20) => {
   try {
     if (typeof navigator !== 'undefined' && 'vibrate' in navigator && isAndroid()) {
       // Pattern can feel more tactile than constant vibration on Android
       const pattern = Array.isArray(duration) ? duration : [duration, 20, Math.max(10, duration - 5)];
-      (navigator as any).vibrate?.(pattern);
+      const vibNavigator = navigator as Navigator & { vibrate?: (pattern: number | number[]) => boolean };
+      vibNavigator.vibrate?.(pattern);
     }
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to trigger haptic feedback:', error);
+  }
 };
 
 let audioCtx: AudioContext | null = null;
 export const playTone = async (frequency = 880, durationMs = 120, gain = 0.05) => {
   try {
-    if (typeof window === 'undefined' || !(window as any).AudioContext) return;
-    audioCtx = audioCtx || new (window as any).AudioContext();
+    if (typeof window === 'undefined' || typeof window.AudioContext === 'undefined') return;
+    audioCtx = audioCtx || new AudioContext();
     const ctx = audioCtx;
     if (ctx.state === 'suspended') await ctx.resume();
     const osc = ctx.createOscillator();
@@ -38,13 +41,15 @@ export const playTone = async (frequency = 880, durationMs = 120, gain = 0.05) =
     g.gain.exponentialRampToValueAtTime(0.0001, now + durationMs / 1000);
     osc.start(now);
     osc.stop(now + durationMs / 1000 + 0.01);
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to play tone:', error);
+  }
 };
 
 export const playTada = async () => {
   try {
-    if (typeof window === 'undefined' || !(window as any).AudioContext) return;
-    audioCtx = audioCtx || new (window as any).AudioContext();
+    if (typeof window === 'undefined' || typeof window.AudioContext === 'undefined') return;
+    audioCtx = audioCtx || new AudioContext();
     const ctx = audioCtx;
     if (ctx.state === 'suspended') await ctx.resume();
     const now = ctx.currentTime;
@@ -65,7 +70,9 @@ export const playTada = async () => {
       osc.start(t0);
       osc.stop(t0 + step + 0.02);
     });
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to play celebratory tone:', error);
+  }
 };
 
 export const fireFeedback = (done: boolean) => {

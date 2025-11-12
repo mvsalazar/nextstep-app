@@ -8,15 +8,15 @@ async function startMocks() {
   if (import.meta.env.DEV && useMsw) {
     try {
       const { worker } = await import('./mocks/browser');
-      (window as any).__MSW_ENABLED = true;
+      window.__MSW_ENABLED = true;
       worker.start({ onUnhandledRequest: 'bypass' });
       console.info('[MSW] Mock Service Worker starting…');
     } catch (e) {
-      (window as any).__MSW_ENABLED = false;
+      window.__MSW_ENABLED = false;
       console.warn('[MSW] Failed to start, proceeding without mocks', e);
     }
   } else {
-    (window as any).__MSW_ENABLED = false;
+    window.__MSW_ENABLED = false;
   }
 }
 

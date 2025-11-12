@@ -11,6 +11,13 @@ export const useTemplates = (routineId?: string) => {
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiTasks : localTasks;
+  const createTemplateFn = storageMode === 'api' ? apiTasks.createTemplate : localTasks.createTemplate;
+  const updateTemplateFn = storageMode === 'api'
+    ? (args: { id: string; updates: Partial<Task> }) => apiTasks.updateTemplate(args.id, args.updates)
+    : (args: { id: string; updates: Partial<Task> }) => localTasks.updateTask(args.id, args.updates);
+  const deleteTemplateFn = storageMode === 'api'
+    ? (id: string) => apiTasks.deleteTemplate(id)
+    : (id: string) => localTasks.deleteTask(id);
 
   const { data: templates = [], isLoading, error } = useQuery({
     queryKey: [QUERY_KEY, storageMode, routineId],
@@ -20,17 +27,17 @@ export const useTemplates = (routineId?: string) => {
   });
 
   const createMutation = useMutation({
-    mutationFn: (tpl: Omit<Task, 'id' | 'updatedAt' | 'version'>) => (adapter as any).createTemplate(tpl),
+    mutationFn: (tpl: Omit<Task, 'id' | 'updatedAt' | 'version'>) => createTemplateFn(tpl),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => (apiTasks as any).updateTemplate?.(id, updates) || (localTasks as any).updateTask?.(id, updates),
+    mutationFn: ({ id, updates }: { id: string; updates: Partial<Task> }) => updateTemplateFn({ id, updates }),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id: string) => (apiTasks as any).deleteTemplate?.(id) || (localTasks as any).deleteTask?.(id),
+    mutationFn: (id: string) => deleteTemplateFn(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 

@@ -23,7 +23,7 @@ interface TemplateManagerProps {
 }
 
 export const TemplateManager = ({ isOpen, routineId, onClose }: TemplateManagerProps) => {
-  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate, isCreating, isUpdating, isDeleting } = useTemplates(routineId || undefined);
+  const { templates, isLoading, createTemplate, updateTemplate, deleteTemplate, isCreating, isDeleting } = useTemplates(routineId || undefined);
   const { data: settings } = useSettings();
   const [newTpl, setNewTpl] = useState<{ title: string; emoji: string; dueTime: string; prime: PrimeOffset[] }>({ title: '', emoji: '🪥', dueTime: '', prime: [] });
   const [dragIndex, setDragIndex] = useState<number | null>(null);

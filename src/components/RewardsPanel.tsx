@@ -11,6 +11,7 @@ import { useSettings } from '@/hooks/useSettings';
 
 import { useUiStore } from '@/store/ui';
 import { toast } from 'sonner';
+import type { RewardRule } from '@/types';
 
 export const RewardsPanel = () => {
   const { data: rewards = [] } = useRewards();
@@ -58,7 +59,7 @@ export const RewardsPanel = () => {
     }
   };
 
-  const handleRedeemReward = async (reward: any) => {
+  const handleRedeemReward = async (reward: RewardRule) => {
     if (stars < reward.cost) {
       toast.error(`You need ${reward.cost - stars} more stars for this reward!`);
       return;

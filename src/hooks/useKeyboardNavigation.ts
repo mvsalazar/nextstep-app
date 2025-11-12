@@ -124,6 +124,7 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
     setSettingsOpen,
     setRewardsOpen,
     setTaskEditOpen,
+    setKeyboardHelpOpen,
   ]);
 
   // Auto-select first task if none selected and tasks exist

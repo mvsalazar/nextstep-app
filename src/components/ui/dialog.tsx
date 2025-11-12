@@ -44,19 +44,20 @@ function DialogOverlay({
   )
 }
 
+type DialogContentProps = React.ComponentProps<typeof DialogPrimitive.Content> & {
+  showCloseButton?: boolean
+}
+
 function DialogContent({
   className,
   children,
   showCloseButton = true,
   ...props
-}: React.ComponentProps<typeof DialogPrimitive.Content> & {
-  showCloseButton?: boolean
-}) {
-  // Radix Dialog warns if there's no Description or aria-describedby provided.
-  // Default to aria-describedby={undefined} so consumers aren't forced to add a Description.
-  const contentProps = { ...(props as any) } as React.ComponentProps<typeof DialogPrimitive.Content> & { [key: string]: any }
-  if (contentProps["aria-describedby"] === undefined) {
-    contentProps["aria-describedby"] = undefined
+}: DialogContentProps) {
+  const { ["aria-describedby"]: ariaDescribedBy, ...restProps } = props
+  const contentProps: React.ComponentProps<typeof DialogPrimitive.Content> = {
+    ...restProps,
+    "aria-describedby": ariaDescribedBy ?? undefined,
   }
   return (
     <DialogPortal data-slot="dialog-portal">

@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { useTasks } from './useTasks';
 import { useCurrentDate } from './useSettings';
 import type { Task, PrimeOffset } from '@/types';
@@ -10,13 +10,13 @@ export const useReminders = () => {
   const timersRef = useRef<Map<string, NodeJS.Timeout>>(new Map());
 
   // Clear all existing timers
-  const clearAllTimers = () => {
+  const clearAllTimers = useCallback(() => {
     timersRef.current.forEach((timer) => clearTimeout(timer));
     timersRef.current.clear();
-  };
+  }, []);
 
   // Schedule reminders for a single task
-  const scheduleTaskReminders = (task: Task) => {
+  const scheduleTaskReminders = useCallback((task: Task) => {
     if (!task.dueTime || !task.prime || task.done) return;
 
     const now = new Date();
@@ -63,27 +63,27 @@ export const useReminders = () => {
         console.log(`Scheduled reminder for "${task.title}" at ${reminderTime.toLocaleTimeString()} (in ${Math.round(delay / 1000)}s)`);
       }
     });
-  };
+  }, []);
 
   // Schedule reminders for all tasks
-  const scheduleAllReminders = () => {
+  const scheduleAllReminders = useCallback(() => {
     clearAllTimers();
     
     const incompleteTasks = tasks.filter(task => !task.done);
     incompleteTasks.forEach(scheduleTaskReminders);
     
     console.log(`Scheduled reminders for ${incompleteTasks.length} tasks`);
-  };
+  }, [clearAllTimers, scheduleTaskReminders, tasks]);
 
   // Effect to schedule reminders when tasks change
   useEffect(() => {
     scheduleAllReminders();
-    
+
     // Cleanup on unmount
     return () => {
       clearAllTimers();
     };
-  }, [tasks]);
+  }, [clearAllTimers, scheduleAllReminders]);
 
   // Manual trigger for testing
   const triggerTestReminder = (task: Task) => {

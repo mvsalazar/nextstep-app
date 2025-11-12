@@ -36,7 +36,7 @@ const generateDailyTasksForDate = (date: string): void => {
   }
 };
 
-export const getTasks = async (routineId?: string, date?: string, _childId?: string): Promise<Task[]> => {
+export const getTasks = async (routineId?: string, date?: string, childId?: string): Promise<Task[]> => {
   await new Promise(resolve => setTimeout(resolve, 50)); // Simulate network delay
   
   // If we have a date, ensure daily tasks exist for that date
@@ -45,7 +45,7 @@ export const getTasks = async (routineId?: string, date?: string, _childId?: str
   }
   
   const currentState = loadAppState();
-  const currentChildId = currentState.settings.currentChildId;
+  const currentChildId = childId ?? currentState.settings.currentChildId;
   let tasks = currentState.tasks;
   
   // When filtering by date, only return non-template tasks

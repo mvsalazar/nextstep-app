@@ -103,11 +103,11 @@ export const useCreateTemplate = () => {
   const queryClient = useQueryClient();
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
-  const adapter = storageMode === 'api' ? apiTasks : localTasks;
+  const createTemplateFn = storageMode === 'api' ? apiTasks.createTemplate : localTasks.createTemplate;
 
   return useMutation({
     mutationFn: (templateData: Omit<Task, 'id' | 'updatedAt' | 'version'>) =>
-      (adapter as any).createTemplate(templateData),
+      createTemplateFn(templateData),
     onSuccess: () => {
       // Invalidate task caches so next date generation or template views reflect changes
       queryClient.invalidateQueries({ queryKey: ['tasks'] });

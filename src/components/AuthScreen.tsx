@@ -63,7 +63,9 @@ export const AuthScreen = () => {
                   state.settings.storageMode = 'local';
                   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
                   location.reload();
-                } catch {}
+                } catch (error) {
+                  console.error('Failed to toggle local mode:', error);
+                }
               }}
             >
               Switch to Local Mode

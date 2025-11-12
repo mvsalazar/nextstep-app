@@ -9,7 +9,9 @@ const getStorageMode = (): 'api' | 'local' => {
       const parsed = JSON.parse(raw);
       return parsed.settings?.storageMode || 'local';
     }
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to determine storage mode:', error);
+  }
   return 'local';
 };
 

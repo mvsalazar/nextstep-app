@@ -1,5 +1,9 @@
-import type { Routine } from '@/types';
+import type { Routine, ApiError } from '@/types';
 import { apiClient } from './client';
+
+const isApiError = (error: unknown): error is ApiError => {
+  return typeof error === 'object' && error !== null && 'code' in error;
+};
 
 export const getRoutines = async (childId?: string): Promise<Routine[]> => {
   const qs = childId ? `?childId=${encodeURIComponent(childId)}` : '';
@@ -9,8 +13,8 @@ export const getRoutines = async (childId?: string): Promise<Routine[]> => {
 export const getRoutineById = async (id: string): Promise<Routine | null> => {
   try {
     return await apiClient.get<Routine>(`/v1/routines/${id}`);
-  } catch (error: any) {
-    if (error.code === 'NOT_FOUND') {
+  } catch (error: unknown) {
+    if (isApiError(error) && error.code === 'NOT_FOUND') {
       return null;
     }
     throw error;

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { Settings } from '@/types';
-import { TODAY, STORAGE_KEY } from '@/lib/constants';
+import { TODAY, STORAGE_KEY, DEFAULT_SETTINGS } from '@/lib/constants';
 
 // Import adapters
 import * as localSettings from '@/adapters/local/settings';
@@ -40,7 +40,8 @@ export const useSettings = () => {
           storageMode,
           currentDate: s.currentDate || mirroredDate || TODAY,
         } as Settings;
-      } catch {
+      } catch (error) {
+        console.warn('Failed to mirror settings from localStorage:', error);
         return { ...s, storageMode } as Settings;
       }
     },
@@ -109,7 +110,11 @@ export const useCurrentDate = () => {
     // Optimistically update local cache so UI responds immediately,
     // then persist via the selected adapter.
     const mode = settings?.storageMode || 'local';
-    queryClient.setQueryData(['settings', mode], (prev: any) => ({ ...(prev || {}), currentDate: date }));
+    queryClient.setQueryData<Settings>(['settings', mode], (prev) => {
+      const fallbackSettings: Settings = { ...DEFAULT_SETTINGS, storageMode: mode };
+      const base = prev ?? settings ?? fallbackSettings;
+      return { ...base, currentDate: date };
+    });
     updateSettings.mutate({ currentDate: date });
   };
   

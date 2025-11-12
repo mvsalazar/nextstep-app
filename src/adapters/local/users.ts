@@ -63,7 +63,8 @@ export const deleteChild = async (childId: string): Promise<void> => {
   await new Promise((r) => setTimeout(r, 100));
   updateAppState((s) => {
     const filteredChildren = (s.children || []).filter((c) => c.id !== childId);
-    const { [childId]: _removed, ...restStars } = s.starsByChild || {} as any;
+    const restStars = { ...(s.starsByChild || {}) };
+    delete restStars[childId];
     // Remove tasks and routines for that child
     return {
       ...s,

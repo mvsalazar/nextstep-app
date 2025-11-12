@@ -20,7 +20,9 @@ export const useRoutines = () => {
       if (!raw) return undefined;
       const parsed = JSON.parse(raw);
       return parsed.settings?.[key];
-    } catch {}
+    } catch (error) {
+      console.warn('Failed to read local storage for key:', key, error);
+    }
     return undefined;
   };
   const storageMode = (getLocal('storageMode') || 'local') as 'api' | 'local';

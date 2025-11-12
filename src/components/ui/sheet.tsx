@@ -44,18 +44,20 @@ function SheetOverlay({
   )
 }
 
+type SheetContentProps = React.ComponentProps<typeof SheetPrimitive.Content> & {
+  side?: "top" | "right" | "bottom" | "left"
+}
+
 function SheetContent({
   className,
   children,
   side = "right",
   ...props
-}: React.ComponentProps<typeof SheetPrimitive.Content> & {
-  side?: "top" | "right" | "bottom" | "left"
-}) {
-  // Silence Radix warning when no Description is provided by defaulting aria-describedby.
-  const contentProps = { ...(props as any) } as React.ComponentProps<typeof SheetPrimitive.Content> & { [key: string]: any }
-  if (contentProps["aria-describedby"] === undefined) {
-    contentProps["aria-describedby"] = undefined
+}: SheetContentProps) {
+  const { ["aria-describedby"]: ariaDescribedBy, ...restProps } = props
+  const contentProps: React.ComponentProps<typeof SheetPrimitive.Content> = {
+    ...restProps,
+    "aria-describedby": ariaDescribedBy ?? undefined,
   }
   return (
     <SheetPortal>

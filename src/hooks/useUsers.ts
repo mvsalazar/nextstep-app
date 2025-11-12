@@ -13,7 +13,9 @@ const getStorageMode = (): 'api' | 'local' => {
       const parsed = JSON.parse(raw);
       return parsed.settings?.storageMode || 'local';
     }
-  } catch {}
+  } catch (error) {
+    console.warn('Failed to read storage mode for users:', error);
+  }
   return 'local';
 };
 
@@ -40,7 +42,7 @@ export const useChildren = () => {
 
   const updateMutation = useMutation({
     mutationFn: ({ id, updates }: { id: string; updates: { name?: string; emoji?: string } }) =>
-      (adapter as any).updateChild(id, updates),
+      adapter.updateChild(id, updates),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: [QUERY_KEY] }),
   });
 

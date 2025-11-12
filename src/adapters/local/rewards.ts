@@ -7,25 +7,25 @@ export const getRewards = async (): Promise<RewardRule[]> => {
   return state.rewardRules;
 };
 
-export const getStars = async (_childId?: string): Promise<number> => {
+export const getStars = async (childId?: string): Promise<number> => {
   await new Promise(resolve => setTimeout(resolve, 50));
   const state = loadAppState();
-  const childId = state.settings.currentChildId || (state.children[0]?.id);
-  return childId ? (state.starsByChild?.[childId] || 0) : 0;
+  const activeChildId = childId || state.settings.currentChildId || state.children[0]?.id;
+  return activeChildId ? (state.starsByChild?.[activeChildId] || 0) : 0;
 };
 
-export const updateStars = async (delta: number, _childId?: string): Promise<number> => {
+export const updateStars = async (delta: number, childId?: string): Promise<number> => {
   await new Promise(resolve => setTimeout(resolve, 100));
   
   let newStarCount = 0;
 
   updateAppState(state => {
-    const childId = state.settings.currentChildId || (state.children[0]?.id);
+    const activeChildId = childId || state.settings.currentChildId || state.children[0]?.id;
     const starsByChild = { ...(state.starsByChild || {}) };
-    if (childId) {
-      const prev = starsByChild[childId] || 0;
+    if (activeChildId) {
+      const prev = starsByChild[activeChildId] || 0;
       newStarCount = Math.max(0, prev + delta);
-      starsByChild[childId] = newStarCount;
+      starsByChild[activeChildId] = newStarCount;
     }
     return {
       ...state,

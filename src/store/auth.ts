@@ -19,7 +19,11 @@ type AuthActions = {
 
 const TOKEN_KEY = 'nextstep:authToken';
 
-export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
+const toErrorMessage = (error: unknown, fallback: string): string => {
+  return error instanceof Error ? error.message : fallback;
+};
+
+export const useAuthStore = create<AuthState & AuthActions>((set) => ({
   token: null,
   user: null,
   loading: false,
@@ -33,8 +37,8 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       try {
         const me = await authApi.getMe();
         set({ user: me, error: null });
-      } catch (e: any) {
-        set({ error: e?.message || 'Failed to load user', token: null, user: null });
+      } catch (error: unknown) {
+        set({ error: toErrorMessage(error, 'Failed to load user'), token: null, user: null });
         localStorage.removeItem(TOKEN_KEY);
         apiClient.setToken('');
       }
@@ -48,8 +52,8 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       localStorage.setItem(TOKEN_KEY, token);
       apiClient.setToken(token);
       set({ token, user, loading: false });
-    } catch (e: any) {
-      set({ error: e?.message || 'Login failed', loading: false });
+    } catch (error: unknown) {
+      set({ error: toErrorMessage(error, 'Login failed'), loading: false });
     }
   },
 
@@ -60,13 +64,17 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
       localStorage.setItem(TOKEN_KEY, token);
       apiClient.setToken(token);
       set({ token, user, loading: false });
-    } catch (e: any) {
-      set({ error: e?.message || 'Signup failed', loading: false });
+    } catch (error: unknown) {
+      set({ error: toErrorMessage(error, 'Signup failed'), loading: false });
     }
   },
 
   logout: async () => {
-    try { await authApi.logout(); } catch { /* ignore */ }
+    try {
+      await authApi.logout();
+    } catch (error) {
+      console.warn('Failed to log out cleanly:', error);
+    }
     localStorage.removeItem(TOKEN_KEY);
     apiClient.setToken('');
     set({ token: null, user: null, error: null });
@@ -74,4 +82,3 @@ export const useAuthStore = create<AuthState & AuthActions>((set, get) => ({
 
   setUser: (user) => set({ user }),
 }));
-

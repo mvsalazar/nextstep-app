@@ -1,4 +1,4 @@
-import type { AppState } from '@/types';
+import type { AppState, Task, Routine } from '@/types';
 import { STORAGE_KEY, DEFAULT_SETTINGS, SEED_TASKS, SEED_REWARDS, SEED_ROUTINES, SEED_DAILY_ROUTINES, SEED_PARENT, SEED_CHILDREN } from '@/lib/constants';
 
 export const loadAppState = (): AppState => {
@@ -51,14 +51,14 @@ export const loadAppState = (): AppState => {
     const ownerId = parsedState.parentUser?.id || SEED_PARENT.id;
     const defaultChildId = parsedState.settings.currentChildId || SEED_CHILDREN[0].id;
     if (Array.isArray(parsedState.tasks)) {
-      parsedState.tasks = parsedState.tasks.map((t: any) => ({
+      parsedState.tasks = parsedState.tasks.map((t: Task) => ({
         ownerId: t.ownerId || ownerId,
         childId: t.childId || defaultChildId,
         ...t,
       }));
     }
     if (Array.isArray(parsedState.routines)) {
-      parsedState.routines = parsedState.routines.map((r: any) => ({
+      parsedState.routines = parsedState.routines.map((r: Routine) => ({
         ownerId: r.ownerId || ownerId,
         childId: r.childId || defaultChildId,
         ...r,

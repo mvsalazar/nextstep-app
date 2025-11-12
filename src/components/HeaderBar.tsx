@@ -6,7 +6,6 @@ import { useSettings } from '@/hooks/useSettings';
 import { useUiStore } from '@/store/ui';
 import { KeyboardHelp } from './KeyboardHelp';
 import { cn } from '@/lib/utils';
-import { useAuth } from '@/hooks/useAuth';
 import nextstepLogo from '@/assets/next_step_logo.png';
 import { HeaderMenu } from '@/components/HeaderMenu';
 
@@ -14,7 +13,6 @@ export const HeaderBar = () => {
   const { data: stars = 0 } = useStars();
   const { data: settings } = useSettings();
   const { setSettingsOpen, setRewardsOpen, setAdminOpen } = useUiStore();
-  const { storageMode, isAuthenticated, logout } = useAuth();
 
   const isChildMode = settings?.mode === 'child';
   const isLowStim = settings?.theme === 'lowstim';

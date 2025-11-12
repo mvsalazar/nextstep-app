@@ -102,5 +102,5 @@ export type ApiResponse<T> = {
 export type ApiError = {
   code: string;
   message: string;
-  details?: any;
+  details?: unknown;
 };

@@ -7,7 +7,7 @@ let mockTasks: Task[] = [...SEED_TASKS];
 let mockRewards: RewardRule[] = [...SEED_REWARDS];
 let mockSettings: Settings = { ...DEFAULT_SETTINGS };
 let mockRoutines: Routine[] = [...SEED_ROUTINES];
-let mockStarsByChild: Record<string, number> = {};
+const mockStarsByChild: Record<string, number> = {};
 let mockChildren: ChildUser[] = [...SEED_CHILDREN];
 // In-memory mock session store for API mode
 const mockSessions: Record<string, { id: string; email: string; name?: string; role: 'parent' | 'guardian' }> = {};

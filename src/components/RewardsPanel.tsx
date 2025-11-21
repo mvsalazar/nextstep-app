@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Gift, Plus, Trash2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -14,9 +14,10 @@ import { toast } from 'sonner';
 import type { RewardRule } from '@/types';
 
 export const RewardsPanel = () => {
-  const { data: rewards = [] } = useRewards();
   const { data: settings } = useSettings();
-  const { data: stars = 0 } = useStars();
+  const isChildMode = settings?.mode === 'child';
+  const { data: rewards = [] } = useRewards({ enabled: isChildMode });
+  const { data: stars = 0 } = useStars({ enabled: isChildMode });
   const createReward = useCreateReward();
   const deleteReward = useDeleteReward();
   const updateStars = useUpdateStars();
@@ -27,6 +28,16 @@ export const RewardsPanel = () => {
   const [newRewardCost, setNewRewardCost] = useState('5');
 
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
+
+  useEffect(() => {
+    if (!isChildMode && isRewardsOpen) {
+      setRewardsOpen(false);
+    }
+  }, [isChildMode, isRewardsOpen, setRewardsOpen]);
+
+  if (!isChildMode) {
+    return null;
+  }
 
   const handleAddReward = async () => {
     const cost = parseInt(newRewardCost);

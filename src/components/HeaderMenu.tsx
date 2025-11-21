@@ -12,9 +12,9 @@ export const HeaderMenu = () => {
   const { data: settings } = useSettings();
   const { storageMode, isAuthenticated, logout } = useAuth();
   const { setSettingsOpen, setRewardsOpen, setAdminOpen } = useUiStore();
-  const { data: stars = 0 } = useStars();
 
   const isChildMode = settings?.mode === 'child';
+  const { data: stars = 0 } = useStars({ enabled: isChildMode });
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian';
 
   const onOpenChange = (val: boolean) => setOpen(val);
@@ -38,7 +38,7 @@ export const HeaderMenu = () => {
             <SheetTitle>Menu</SheetTitle>
           </SheetHeader>
           <nav className="flex flex-col gap-2 py-4" aria-label="Header menu">
-            {(isChildMode || canAccessAdmin) && (
+            {isChildMode && (
               <Button
                 variant="ghost"
                 className="justify-between gap-2"

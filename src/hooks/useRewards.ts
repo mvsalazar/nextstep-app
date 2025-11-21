@@ -8,7 +8,12 @@ import { useUiStore } from '@/store/ui';
 import * as localRewards from '@/adapters/local/rewards';
 import * as apiRewards from '@/adapters/api/rewards';
 
-export const useRewards = () => {
+type RewardsQueryOptions = {
+  enabled?: boolean;
+};
+
+export const useRewards = (options: RewardsQueryOptions = {}) => {
+  const { enabled = true } = options;
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiRewards : localRewards;
@@ -17,10 +22,16 @@ export const useRewards = () => {
     queryKey: ['rewards'],
     queryFn: adapter.getRewards,
     staleTime: 1000 * 60 * 5, // 5 minutes
+    enabled,
   });
 };
 
-export const useStars = () => {
+type StarsQueryOptions = {
+  enabled?: boolean;
+};
+
+export const useStars = (options: StarsQueryOptions = {}) => {
+  const { enabled = true } = options;
   const { data: settings } = useSettings();
   const storageMode = settings?.storageMode || 'local';
   const adapter = storageMode === 'api' ? apiRewards : localRewards;
@@ -30,6 +41,7 @@ export const useStars = () => {
     queryKey: ['stars', childId],
     queryFn: () => adapter.getStars(childId),
     staleTime: 1000 * 30, // 30 seconds
+    enabled,
   });
 };
 

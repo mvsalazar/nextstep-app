@@ -10,11 +10,11 @@ import nextstepLogo from '@/assets/next_step_logo.png';
 import { HeaderMenu } from '@/components/HeaderMenu';
 
 export const HeaderBar = () => {
-  const { data: stars = 0 } = useStars();
   const { data: settings } = useSettings();
+  const isChildMode = settings?.mode === 'child';
+  const { data: stars = 0 } = useStars({ enabled: isChildMode });
   const { setSettingsOpen, setRewardsOpen, setAdminOpen } = useUiStore();
 
-  const isChildMode = settings?.mode === 'child';
   const isLowStim = settings?.theme === 'lowstim';
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
 
@@ -41,7 +41,7 @@ export const HeaderBar = () => {
 
         <div className="flex items-center gap-2">
           {/* Child Switcher */}
-          {(isChildMode || canAccessAdmin) && (
+          {isChildMode && (
             <>
               <motion.button
                 key={stars}

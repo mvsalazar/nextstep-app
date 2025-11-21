@@ -31,6 +31,7 @@ function AppContent() {
   const { data: settings } = useSettings();
   const { currentDate, setCurrentDate } = useCurrentDate();
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
+  const isChildMode = settings?.mode === 'child';
 
   const { routines } = useRoutines();
 
@@ -107,7 +108,9 @@ function AppContent() {
 
     // Update stars based on completion state change
     const starDelta = newDoneState ? 1 : -1;
-    updateStars.mutate(starDelta);
+    if (isChildMode) {
+      updateStars.mutate(starDelta);
+    }
   };
 
   const isLowStim = settings?.theme === 'lowstim';

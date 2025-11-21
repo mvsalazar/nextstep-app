@@ -1,6 +1,7 @@
 import { useEffect, useCallback } from 'react';
 import type { Task } from '@/types';
 import { useUiStore } from '@/store/ui';
+import { useSettings } from './useSettings';
 
 export const useKeyboardNavigation = (tasks: Task[] = []) => {
   const { 
@@ -12,6 +13,8 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
     setKeyboardHelpOpen,
     isTaskEditOpen,
   } = useUiStore();
+  const { data: settings } = useSettings();
+  const isChildMode = settings?.mode === 'child';
 
   const incompleteTasks = tasks.filter(task => !task.done);
   const currentIndex = incompleteTasks.findIndex(task => task.id === selectedTaskId);
@@ -97,8 +100,10 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
           break;
 
         case 'r':
-          event.preventDefault();
-          setRewardsOpen(true);
+          if (isChildMode) {
+            event.preventDefault();
+            setRewardsOpen(true);
+          }
           break;
 
         case 'n':
@@ -125,6 +130,7 @@ export const useKeyboardNavigation = (tasks: Task[] = []) => {
     setRewardsOpen,
     setTaskEditOpen,
     setKeyboardHelpOpen,
+    isChildMode,
   ]);
 
   // Auto-select first task if none selected and tasks exist

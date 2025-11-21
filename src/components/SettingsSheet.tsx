@@ -24,7 +24,15 @@ export const SettingsSheet = () => {
   const [editNames, setEditNames] = useState<Record<string, string>>({});
 
   const handleModeChange = (isChild: boolean) => {
-    updateSettings.mutate({ mode: isChild ? 'child' : 'adult' });
+    const nextMode = isChild ? 'child' : 'adult';
+    updateSettings.mutate(
+      { mode: nextMode },
+      {
+        onSuccess: () => {
+          toast.success(`Switched to ${nextMode} mode`);
+        },
+      }
+    );
   };
 
   const handleThemeChange = (theme: 'light' | 'lowstim' | 'dark') => {

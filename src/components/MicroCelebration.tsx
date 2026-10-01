@@ -1,37 +1,37 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useEffect } from 'react';
 import { useUiStore } from '@/store/ui';
-import { shouldReduceMotion } from '@/lib/feedback';
 
 export const MicroCelebration = () => {
   const { showMicroCelebration, microEmoji, hideMicroCelebration } = useUiStore();
+  const reduceMotion = useReducedMotion();
 
   useEffect(() => {
     if (!showMicroCelebration) return;
-    const t = setTimeout(hideMicroCelebration, 600);
-    return () => clearTimeout(t);
+    const timer = setTimeout(hideMicroCelebration, 1600);
+    return () => clearTimeout(timer);
   }, [showMicroCelebration, hideMicroCelebration]);
-
-  if (shouldReduceMotion()) return null;
 
   return (
     <AnimatePresence>
       {showMicroCelebration && (
         <motion.div
           key="micro-celebration"
-          initial={{ opacity: 0 }}
+          initial={reduceMotion ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="pointer-events-none fixed inset-0 z-[60] flex items-center justify-center"
+          transition={{ duration: reduceMotion ? 0 : 0.15 }}
+          className="pointer-events-none fixed inset-0 z-[60] flex items-center justify-center p-4"
         >
           <motion.div
-            initial={{ scale: 0.6, rotate: -10, opacity: 0.9 }}
-            animate={{ scale: 1.2, rotate: 0, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ duration: 0.45, ease: 'easeOut' }}
-            aria-hidden
+            initial={reduceMotion ? false : { scale: 0.6, rotate: -10 }}
+            animate={{ scale: 1, rotate: 0 }}
+            exit={reduceMotion ? undefined : { scale: 0.9 }}
+            transition={{ duration: reduceMotion ? 0 : 0.35, ease: 'easeOut' }}
+            className="bg-transparent"
           >
-            <span className="text-7xl md:text-8xl select-none">{microEmoji}</span>
+            <span aria-hidden="true" className="select-none text-7xl md:text-8xl">{microEmoji}</span>
+            <span role="status" className="sr-only">Step complete!</span>
           </motion.div>
         </motion.div>
       )}

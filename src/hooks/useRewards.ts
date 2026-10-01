@@ -57,23 +57,21 @@ export const useUpdateStars = () => {
     onMutate: async (_delta) => {
       // Optimistic update
       await queryClient.cancelQueries({ queryKey: ['stars', settings?.currentChildId] });
-      const previousStars = queryClient.getQueryData(['stars', settings?.currentChildId]) as number;
+      const previousStars = queryClient.getQueryData<number>(['stars', settings?.currentChildId])
+        ?? await adapter.getStars(settings?.currentChildId || undefined);
       const newStars = Math.max(0, previousStars + _delta);
       
       queryClient.setQueryData(['stars', settings?.currentChildId], newStars);
       
-      // Check for celebration thresholds (only for positive deltas in child mode)
-      if (_delta > 0 && settings?.mode === 'child') {
-        const crossedThreshold = STAR_THRESHOLDS.find(
-          threshold => previousStars < threshold && newStars >= threshold
-        );
-        
-        if (crossedThreshold) {
-          setTimeout(() => showCelebrationModal(crossedThreshold), 500);
-        }
-      }
-      
       return { previousStars };
+    },
+    onSuccess: (newStars, delta, context) => {
+      if (delta <= 0 || settings?.mode !== 'child') return;
+      const previousStars = context?.previousStars ?? newStars - delta;
+      const crossedThreshold = STAR_THRESHOLDS.find(
+        threshold => previousStars < threshold && newStars >= threshold
+      );
+      if (crossedThreshold) showCelebrationModal(crossedThreshold);
     },
     onError: (error, _delta, context) => {
       // Rollback on error

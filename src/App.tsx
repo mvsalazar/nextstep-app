@@ -109,10 +109,16 @@ function AppContent() {
       updates: { done: newDoneState } 
     });
 
-    // Update stars based on completion state change
+    const celebrateStep = () => {
+      if (newDoneState && !task.done) useUiStore.getState().triggerMicroCelebration('🎉');
+    };
+
+    // Resolve reward milestones first so a completion only shows one celebration.
     const starDelta = newDoneState ? 1 : -1;
     if (isChildMode) {
-      updateStars.mutate(starDelta);
+      updateStars.mutate(starDelta, { onSuccess: celebrateStep });
+    } else {
+      celebrateStep();
     }
   };
 

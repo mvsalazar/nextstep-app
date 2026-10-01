@@ -50,9 +50,9 @@ export const useUiStore = create<UiState & UiActions>((set) => ({
   setTaskEditOpen: (open) => set({ isTaskEditOpen: open }),
   setAdminOpen: (open) => set({ isAdminOpen: open }),
   setRoutineManagerOpen: (open) => set({ isRoutineManagerOpen: open }),
-  showCelebrationModal: (stars) => set({ showCelebration: true, celebrationStars: stars }),
+  showCelebrationModal: (stars) => set({ showCelebration: true, celebrationStars: stars, showMicroCelebration: false }),
   hideCelebration: () => set({ showCelebration: false, celebrationStars: 0 }),
   setKeyboardHelpOpen: (open) => set({ isKeyboardHelpOpen: open }),
-  triggerMicroCelebration: (emoji) => set({ showMicroCelebration: true, microEmoji: emoji || '🎉' }),
+  triggerMicroCelebration: (emoji) => set(state => state.showCelebration ? state : { showMicroCelebration: true, microEmoji: emoji || '🎉' }),
   hideMicroCelebration: () => set({ showMicroCelebration: false }),
 }));

@@ -8,6 +8,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        success: 'hsl(var(--success) / <alpha-value>)',
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',

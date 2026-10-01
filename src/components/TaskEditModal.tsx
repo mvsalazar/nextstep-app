@@ -255,7 +255,7 @@ export const TaskEditModal = ({ task, routineId, date, isOpen, onClose }: TaskEd
 
           {/* Non-parent mode message */}
           {!isEditing && !isParentMode && (
-            <div className="mt-4 p-3 bg-muted rounded-lg">
+            <div className="mt-4 rounded-md bg-muted p-3">
               <p className="text-sm text-muted-foreground">
                 Only parents and guardians can create new tasks.
               </p>

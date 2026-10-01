@@ -5,12 +5,12 @@
 @layer base {
   :root {
     /* NextStep Design System Colors */
-    --background: 0 0% 100%; /* #FFFFFF */
-    --foreground: 195 17% 21%; /* #061606 -> #3F565F (text primary) */
+    --background: 210 50% 99%;
+    --foreground: 220 55% 12%; /* #061606 -> #3F565F (text primary) */
     --surface: 197 17% 97%; /* #F6F8F9 */
     
     --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 195 17% 21%; /* #3F565F */
+    --card-foreground: 220 55% 12%; /* #3F565F */
     
     --popover: 0 0% 100%; /* #FFFFFF */
     --popover-foreground: 195 17% 21%; /* #3F565F */
@@ -30,19 +30,19 @@
     --accent-dark: 177 21% 57%; /* #7DA5A2 */
     
     /* Neutral Colors */
-    --muted: 197 17% 97%; /* #F6F8F9 */
-    --muted-foreground: 195 12% 62%; /* #9BA8AD */
-    --border: 195 25% 89%; /* #D9E1E4 */
-    --input: 195 25% 89%; /* #D9E1E4 */
+    --muted: 190 22% 94%;
+    --muted-foreground: 215 20% 46%;
+    --border: 213 40% 90%;
+    --input: 195 22% 91%;
     
     /* Feedback Colors */
-    --success: 177 21% 57%; /* #7DA5A2 */
+    --success: 158 46% 46%; /* #7DA5A2 */
     --warning: 45 73% 61%; /* #E6B655 */
     --destructive: 0 52% 56%; /* #C15A5A */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF */
     
     --ring: 198 24% 41%; /* #4D7385 - primary */
-    --radius: 0.75rem;
+    --radius: 1rem;
   }
 }
 
@@ -131,5 +131,10 @@
   /* App container inherits body background */
   #root {
     min-height: 100vh;
+  }
+
+  ::selection {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
   }
 }

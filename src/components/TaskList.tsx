@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus } from 'lucide-react';
+import { useState } from 'react';
+import { Plus, List, CheckCircle2, ChevronUp, ChevronDown } from 'lucide-react';
 import { useTasks } from '@/hooks/useTasks';
 import { useKeyboardNavigation } from '@/hooks/useKeyboardNavigation';
 import { useSettings } from '@/hooks/useSettings';
@@ -16,6 +17,7 @@ interface TaskListProps {
 }
 
 export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading: propLoading }: TaskListProps) => {
+  const [showCompleted, setShowCompleted] = useState(true);
   const { data: hookTasks = [], isLoading: hookLoading } = useTasks();
   const { data: settings } = useSettings();
   const tasks = propTasks !== undefined ? propTasks : hookTasks;
@@ -48,12 +50,12 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading
   const completedTasks = tasks.filter(task => task.done);
 
   return (
-    <div className="space-y-6" aria-busy={isLoading || undefined}>
+    <section className="space-y-6" aria-busy={isLoading || undefined}>
       {/* Loading skeletons */}
       {isLoading && (
         <div className="space-y-3" aria-hidden>
           {[1,2,3].map((i) => (
-            <div key={i} className="animate-pulse rounded-lg border border-input bg-card p-4">
+            <div key={i} className="animate-pulse rounded-md border border-input bg-card p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="h-8 w-8 rounded-full bg-muted" />
@@ -73,11 +75,14 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading
       )}
       {/* Add Task Button - Only for Parents/Guardians */}
       {isParentMode && (
-        <div className="text-center">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.14em] text-primary">Today</p>
+            <h2 className="mt-1 text-xl font-bold tracking-tight text-foreground">Your steps</h2>
+          </div>
           <Button
             onClick={handleAddTask}
-            variant="outline"
-            className="gap-2 hover:bg-primary/10 hover:border-primary/30"
+            className="h-10 gap-2 rounded-full px-4"
             aria-label="Add new task"
           >
             <Plus className="h-4 w-4" />
@@ -89,9 +94,7 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading
       {/* Incomplete Tasks */}
       {!isLoading && incompleteTasks.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-foreground mb-3">
-            To Do ({incompleteTasks.length})
-          </h3>
+          <div className="mb-4 flex items-center justify-between gap-3"><h3 className="flex items-center gap-3 text-lg font-bold"><List className="h-5 w-5" />Up Next</h3><span className="text-sm text-muted-foreground">{incompleteTasks.length} {incompleteTasks.length === 1 ? 'task' : 'tasks'} remaining</span></div>
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {incompleteTasks.map((task) => (
@@ -112,10 +115,8 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading
       {/* Completed Tasks */}
       {!isLoading && completedTasks.length > 0 && (
         <div>
-          <h3 className="text-lg font-semibold text-foreground mb-3">
-            Completed ({completedTasks.length})
-          </h3>
-          <div className="space-y-3">
+          <div className="mb-4 flex items-center justify-between gap-3"><h3 className="flex items-center gap-3 text-lg font-bold"><CheckCircle2 className="h-7 w-7 text-success" />Completed ({completedTasks.length})</h3><button onClick={() => setShowCompleted(!showCompleted)} aria-expanded={showCompleted} aria-controls="completed-tasks" className="flex items-center gap-2 rounded-md p-1 text-sm text-blue-700 dark:text-primary low-stim:text-primary">{showCompleted ? 'Hide' : 'Show'} completed{showCompleted ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</button></div>
+          <div id="completed-tasks" hidden={!showCompleted} className="space-y-2">
             <AnimatePresence mode="popLayout">
               {completedTasks.map((task) => (
                 <TaskCard
@@ -159,6 +160,6 @@ export const TaskList = ({ tasks: propTasks, onToggleTask, onEditTask, isLoading
           )}
         </motion.div>
       )}
-    </div>
+    </section>
   );
 };

@@ -1,12 +1,9 @@
 import { motion } from 'framer-motion';
-import { CheckCircle2, Clock } from 'lucide-react';
+import { Bell, Check, CheckCircle2, ChevronRight, Circle, Clock } from 'lucide-react';
+import { formatTaskTime } from '@/lib/taskTime';
 import type { Task } from '@/types';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import { fireFeedback, shouldReduceMotion, playTada, haptic } from '@/lib/feedback';
-import { useUiStore } from '@/store/ui';
-import { useState } from 'react';
+import { fireFeedback } from '@/lib/feedback';
 
 interface TaskCardProps {
   task: Task;
@@ -14,171 +11,26 @@ interface TaskCardProps {
   onEdit?: (id: string) => void;
   isNextUp?: boolean;
   isSelected?: boolean;
-  isEditable?: boolean; // New prop to control editability
+  isEditable?: boolean;
   className?: string;
 }
-
-export const TaskCard = ({ 
-  task, 
-  onToggle, 
-  onEdit, 
-  isNextUp = false,
-  isSelected = false,
-  isEditable = true,
-  className 
-}: TaskCardProps) => {
-  const [showBurst, setShowBurst] = useState(false);
-  const [iconPop, setIconPop] = useState(false);
-  const [liveMsg, setLiveMsg] = useState('');
-  const { triggerMicroCelebration } = useUiStore();
-  const handleToggle = (buttonEl?: HTMLButtonElement | null) => {
-    const next = !task.done;
-    // Blur to avoid focus jumping to other elements
-    buttonEl?.blur?.();
-    // Trigger feedback and local animation before state update (so the card isn't removed immediately)
-    if (next) {
-      playTada();
-      haptic([18, 20, 15]);
-      triggerMicroCelebration('🎉');
-    } else {
-      fireFeedback(false);
-    }
-    setLiveMsg(`${task.title} ${next ? 'marked done' : 'marked not done'}`);
-    const animateFirst = next && !shouldReduceMotion();
-    if (animateFirst) {
-      setShowBurst(true);
-      setIconPop(true);
-      setTimeout(() => setShowBurst(false), 500);
-      setTimeout(() => setIconPop(false), 250);
-    }
-    // Slight delay lets animation/beep register before list re-renders
-    const delay = animateFirst ? 140 : 0;
-    setTimeout(() => onToggle(task.id, next), delay);
-  };
-
-  const formatTime = (time: string) => {
-    const [hours, minutes] = time.split(':');
-    const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    return `${displayHour}:${minutes} ${ampm}`;
-  };
-
+export const TaskCard = ({ task, onToggle, onEdit, isNextUp = false, isSelected = false, isEditable = true, className }: TaskCardProps) => {
+  const toggle = () => { fireFeedback(!task.done); onToggle(task.id, !task.done); };
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ duration: 0.2 }}
-      className={className}
-    >
-      <Card
-        className={cn(
-          'transition-all duration-200 bg-card border-border',
-          isEditable && onEdit && 'cursor-pointer hover:shadow-md',
-          !isEditable && 'cursor-default',
-          isNextUp && 'ring-2 ring-primary bg-primary/5',
-          isSelected && 'ring-2 ring-accent bg-accent/10',
-          task.done && 'bg-success/10 border-success/30',
-          'focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary'
-        )}
-        onClick={isEditable && onEdit ? () => onEdit(task.id) : undefined}
-        data-task-id={task.id}
-      >
-        <CardContent className="p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3 flex-1 min-w-0">
-              <span className="text-2xl flex-shrink-0" role="img" aria-label={task.title}>
-                {task.emoji}
-              </span>
-              <div className="flex-1 min-w-0">
-                <h3 className={cn(
-                  'text-lg font-medium leading-tight text-foreground',
-                  task.done && 'line-through text-muted-foreground'
-                )}>
-                  {task.title}
-                </h3>
-                <div className="flex items-center gap-2 mt-1">
-                  {task.dueTime && (
-                    <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                      <Clock className="h-3 w-3" />
-                      <span>{formatTime(task.dueTime)}</span>
-                    </div>
-                  )}
-                  {task.prime && task.prime.length > 0 && (
-                    <div className="px-2 py-1 bg-warning/10 text-warning text-xs rounded-full">
-                      Reminders: {task.prime.join(', ')}min
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-            <motion.div className="relative"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <Button
-                variant={task.done ? 'outline' : 'outline'}
-                size="sm"
-                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                  e.stopPropagation();
-                  handleToggle(e.currentTarget);
-                }}
-                className={cn(
-                  'ml-3 flex-shrink-0 rounded-md h-9 px-3 py-2 shadow-xs border focus-visible:ring-ring focus-visible:ring-[3px] focus-visible:ring-offset-2 focus-visible:outline-none',
-                  task.done
-                    ? 'bg-card text-success border-success hover:bg-success/10'
-                    : 'bg-primary text-primary-foreground border-primary/70 hover:bg-primary/90'
-                )}
-                aria-pressed={task.done}
-                aria-label={task.done ? `Mark ${task.title} as not done` : `Mark ${task.title} as done`}
-              >
-                <motion.span
-                  initial={false}
-                  animate={iconPop ? { scale: [1, 1.25, 1] } : { scale: 1 }}
-                  transition={{ type: 'tween', duration: 0.25, ease: 'easeOut' }}
-                  className="inline-flex items-center"
-                >
-                  <CheckCircle2 
-                    className={cn(
-                      'h-4 w-4',
-                      task.done ? 'text-success' : 'text-primary-foreground'
-                    )} 
-                    fill={'none'}
-                  />
-                </motion.span>
-                {task.done ? 'Done' : 'Mark Done'}
-              </Button>
-
-              {showBurst && (
-                <>
-                  <motion.span
-                    aria-hidden
-                    initial={{ opacity: 0.35, scale: 0.9 }}
-                    animate={{ opacity: 0, scale: 1.5 }}
-                    transition={{ type: 'tween', duration: 0.4, ease: 'easeOut' }}
-                    className={cn('pointer-events-none absolute inset-0 m-auto h-9 w-[5.5rem] rounded-md blur-sm',
-                      task.done ? 'bg-success/20' : 'bg-primary/25'
-                    )}
-                  />
-                  <motion.span
-                    aria-hidden
-                    initial={{ opacity: 0.6, scale: 0.8 }}
-                    animate={{ opacity: 0, scale: 1.6 }}
-                    transition={{ type: 'tween', duration: 0.45, ease: 'easeOut' }}
-                    className={cn('pointer-events-none absolute inset-0 m-auto h-9 w-[5.5rem] rounded-md border-2',
-                      task.done ? 'border-success/70' : 'border-primary/70'
-                    )}
-                  />
-                </>
-              )}
-            </motion.div>
-          </div>
-        </CardContent>
-      </Card>
-      {/* SR live region for confirmation */}
-      <span aria-live="polite" className="sr-only">{liveMsg}</span>
+    <motion.div layout initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+      className={cn('flex items-center gap-4 rounded-xl border border-border p-4 sm:p-5', isNextUp ? 'grid grid-cols-[auto_minmax(0,1fr)] items-start gap-x-3 gap-y-5 border-0 bg-transparent p-0 sm:flex sm:flex-wrap sm:items-center sm:gap-4 sm:p-0' : task.done ? 'bg-muted/30' : 'bg-card', isSelected && 'ring-2 ring-primary', className)} data-task-id={task.id}>
+      {!isNextUp && <button onClick={toggle} aria-pressed={task.done} aria-label={`Mark ${task.title} as ${task.done ? 'not done' : 'done'}`} className={cn('grid h-8 w-8 shrink-0 place-items-center rounded-full', task.done ? 'bg-success text-white' : 'text-muted-foreground')}>
+        {task.done ? <Check className="h-5 w-5" /> : <Circle className="h-7 w-7" />}
+      </button>}
+      <span aria-hidden="true" className={cn('grid shrink-0 place-items-center rounded-2xl bg-primary/5', isNextUp ? 'h-12 w-12 text-3xl sm:h-24 sm:w-24 sm:text-5xl' : 'h-14 w-14 text-3xl')}>{task.emoji}</span>
+      <div className="min-w-0 flex-1">
+        <h3 className={cn('font-bold text-foreground', isNextUp ? 'break-words text-xl sm:text-3xl' : 'text-lg', task.done && 'text-muted-foreground line-through')}>{task.title}</h3>
+        <div className={cn("mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground", isNextUp && "flex-col items-start gap-y-2 sm:flex-row sm:items-center sm:gap-y-1")}>
+          {task.dueTime && <span className="inline-flex items-center gap-2 [&>svg]:shrink-0"><Clock className="h-4 w-4" />{formatTaskTime(task.dueTime)}</span>}
+          {!!task.prime?.length && <span className="inline-flex items-center gap-2 [&>svg]:shrink-0"><Bell className="h-4 w-4" />Reminder {task.prime.join(', ')} min before</span>}
+        </div>
+      </div>
+      {isNextUp ? <button onClick={toggle} className="col-span-2 flex min-h-14 w-full items-center justify-center gap-3 rounded-xl bg-primary px-7 py-4 text-lg font-semibold text-primary-foreground shadow-lg shadow-primary/10 hover:bg-primary/90 sm:w-auto"><CheckCircle2 className="h-6 w-6" />Mark Done</button> : isEditable && onEdit && <button onClick={() => onEdit(task.id)} aria-label={`Edit ${task.title}`} className="rounded-lg p-2 text-muted-foreground hover:bg-muted"><ChevronRight className="h-5 w-5" /></button>}
     </motion.div>
   );
 };

@@ -82,7 +82,7 @@ export const TemplateManager = ({ isOpen, routineId, onClose }: TemplateManagerP
 
         <div className="space-y-6">
           {/* Add new template */}
-          <div className="rounded-lg border p-4 bg-card">
+          <div className="rounded-md border p-4 bg-card">
             <h3 className="text-sm font-semibold mb-3 text-foreground">Add Template</h3>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
               <div className="space-y-1 sm:col-span-2">

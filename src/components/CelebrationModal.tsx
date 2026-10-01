@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { Star, X } from 'lucide-react';
+import { Star } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useUiStore } from '@/store/ui';
@@ -51,7 +51,7 @@ export const CelebrationModal = () => {
                   type: "spring",
                   stiffness: 200
                 }}
-                className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full mb-4"
+                className="mb-4 inline-flex h-20 w-20 items-center justify-center rounded-full bg-warning/15"
               >
                 <Star className="h-10 w-10 text-white" fill="currentColor" />
               </motion.div>
@@ -107,7 +107,6 @@ export const CelebrationModal = () => {
           className="absolute right-4 top-4 p-2"
           aria-label="Close celebration"
         >
-          <X className="h-4 w-4" />
         </Button>
       </DialogContent>
     </Dialog>

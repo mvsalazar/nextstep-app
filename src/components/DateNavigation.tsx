@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
-import { TODAY } from "@/lib/constants";
+import { localDate } from "@/lib/localDate";
 
 interface DateNavigationProps {
   currentDate: string; // YYYY-MM-DD format
@@ -56,11 +56,11 @@ export function DateNavigation({ currentDate, onDateChange }: DateNavigationProp
   };
 
   const goToToday = () => {
-    onDateChange(TODAY);
+    onDateChange(localDate());
   };
 
   const isToday = () => {
-    return currentDate === TODAY;
+    return currentDate === localDate();
   };
 
   return (

@@ -26,6 +26,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { AuthScreen } from '@/components/AuthScreen';
 import { DebugBanner } from '@/components/DebugBanner';
 import { MicroCelebration } from '@/components/MicroCelebration';
+import { RoutineSidebar } from '@/components/RoutineSidebar';
+import { CalendarDays, Sunrise } from 'lucide-react';
 
 function AppContent() {
   const { data: settings } = useSettings();
@@ -62,6 +64,7 @@ function AppContent() {
   // State for current routine (can be overridden by user)
   const [currentRoutineId, setCurrentRoutineId] = useState<string>(smartRoutineId || '');
   const [isSmartSelected, setIsSmartSelected] = useState(true);
+  const [editRoutineId, setEditRoutineId] = useState<string | undefined>();
   
   // Update routine when smart selection changes (e.g., time passes)
   useEffect(() => {
@@ -115,6 +118,14 @@ function AppContent() {
 
   const isLowStim = settings?.theme === 'lowstim';
   const isDark = settings?.theme === 'dark';
+  const formattedDate = useMemo(() => {
+    const parsed = new Date(`${currentDate}T12:00:00`);
+    return new Intl.DateTimeFormat(undefined, {
+      weekday: 'long',
+      month: 'long',
+      day: 'numeric',
+    }).format(parsed);
+  }, [currentDate]);
   
   // Apply theme classes to the root html element for full-scope CSS variables
   useEffect(() => {
@@ -124,34 +135,50 @@ function AppContent() {
   }, [isDark, isLowStim]);
 
   return (
-    <div className={cn('min-h-screen')}>
-      <HeaderBar />
-      {canAccessAdmin && (
-        <DateNavigation 
-          currentDate={currentDate} 
-          onDateChange={setCurrentDate} 
-        />
-      )}
-      <RoutineSelector 
-        currentRoutineId={currentRoutineId}
-        onRoutineChange={handleRoutineChange}
-        smartSelected={isSmartSelected}
-      />
-      
-      <main className="max-w-md mx-auto px-4 py-6 space-y-6">
-        <ProgressBar progress={progress.progress} completedCount={progress.completedCount} totalCount={progress.totalCount} />
-        <NextUp 
-          task={nextTask}
-          taskCount={tasks.length}
-          onToggleTask={handleTaskToggle}
-          onEditTask={(id) => console.log('Edit task:', id)}
-        />
-        <TaskList 
-          tasks={tasks}
-          isLoading={tasksLoading || !currentRoutineId}
-          onToggleTask={handleTaskToggle}
-          onEditTask={(id) => console.log('Edit task:', id)}
-        />
+    <div className={cn('min-h-screen bg-background')}>
+      <HeaderBar>
+        <RoutineSelector currentRoutineId={currentRoutineId} onRoutineChange={handleRoutineChange} smartSelected={isSmartSelected} />
+      </HeaderBar>
+      {canAccessAdmin && <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8"><DateNavigation currentDate={currentDate} onDateChange={setCurrentDate} /></div>}
+
+      <main className="mx-auto max-w-[1440px] px-4 pb-24 pt-6 sm:px-6 sm:pt-8 lg:px-8 lg:pb-12">
+        <section className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2 text-base font-medium text-foreground">
+              <Sunrise className="h-8 w-8 text-warning" aria-hidden="true" />
+              <span>Good {new Date().getHours() < 12 ? 'morning' : new Date().getHours() < 18 ? 'afternoon' : 'evening'}!</span>
+            </div>
+            <h1 className="text-balance text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
+              One step at a time.
+            </h1>
+            <p className="mt-2 max-w-3xl text-base text-muted-foreground sm:text-lg">
+              Focus on what’s next, build momentum, and celebrate the progress you make.
+            </p>
+          </div>
+          <div className="inline-flex w-fit items-center gap-2 rounded-full border border-border bg-card px-3 py-2 text-sm font-medium text-muted-foreground">
+            <CalendarDays className="h-4 w-4 text-primary" aria-hidden="true" />
+            {formattedDate}
+          </div>
+        </section>
+
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+          <div className="min-w-0 space-y-6">
+            <NextUp
+              task={nextTask}
+              taskCount={tasks.length}
+              onToggleTask={handleTaskToggle}
+            />
+            <TaskList
+              tasks={tasks}
+              isLoading={tasksLoading || !currentRoutineId}
+              onToggleTask={handleTaskToggle}
+            />
+          </div>
+          <aside className="space-y-5">
+            <ProgressBar progress={progress.progress} completedCount={progress.completedCount} totalCount={progress.totalCount} />
+            <RoutineSidebar canEdit={canAccessAdmin} routineId={currentRoutineId} onEditRoutine={() => { setEditRoutineId(currentRoutineId); setRoutineManagerOpen(true); }} onViewRoutines={() => { setEditRoutineId(undefined); setRoutineManagerOpen(true); }} />
+          </aside>
+        </div>
       </main>
 
       <CelebrationModal />
@@ -162,6 +189,7 @@ function AppContent() {
         onClose={() => setAdminOpen(false)}
       />
       <RoutineManager 
+        initialRoutineId={editRoutineId}
         isOpen={isRoutineManagerOpen}
         onClose={() => setRoutineManagerOpen(false)}
       />

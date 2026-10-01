@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRoutines } from '@/hooks/useRoutines';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -10,103 +9,43 @@ interface RoutineSelectorProps {
   smartSelected?: boolean; // indicates if this was auto-selected
 }
 
-export const RoutineSelector = ({ currentRoutineId, onRoutineChange, smartSelected = false }: RoutineSelectorProps) => {
+export const RoutineSelector = ({ currentRoutineId, onRoutineChange }: RoutineSelectorProps) => {
   const { routines, isLoading } = useRoutines();
   
-  const currentIndex = routines.findIndex(r => r.id === currentRoutineId);
-  
-  const goToPrevious = () => {
-    if (routines.length === 0) return;
-    const prevIndex = currentIndex <= 0 ? routines.length - 1 : currentIndex - 1;
-    onRoutineChange(routines[prevIndex].id);
-  };
-  
-  const goToNext = () => {
-    if (routines.length === 0) return;
-    const nextIndex = currentIndex >= routines.length - 1 ? 0 : currentIndex + 1;
-    onRoutineChange(routines[nextIndex].id);
-  };
-
   if (isLoading || routines.length === 0) {
     return (
       <div className="flex items-center justify-center py-4">
-        <div className="h-8 w-32 bg-muted rounded-lg animate-pulse" />
+        <div className="h-8 w-32 animate-pulse rounded-md bg-muted" />
       </div>
     );
   }
 
-  const currentRoutine = routines[currentIndex];
-
   return (
-    <div className="flex items-center justify-between px-4 py-2 bg-card/80 backdrop-blur-sm border-b border-border">
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={goToPrevious}
-        disabled={routines.length <= 1}
-        className="p-2"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      
-      <div className="flex items-center gap-2">
-        {currentRoutine && (
-          <motion.div
-            key={currentRoutine.id}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="flex items-center gap-2"
-          >
-            <span 
-              className="text-2xl"
-              style={{ color: currentRoutine.color }}
-            >
-              {currentRoutine.emoji}
-            </span>
-            <span className="font-medium text-lg text-foreground">
-              {currentRoutine.name}
-              {smartSelected && (
-                <span className="ml-2 text-xs text-primary bg-primary/10 px-2 py-1 rounded">
-                  Auto
-                </span>
-              )}
-            </span>
-          </motion.div>
-        )}
+    <nav className="-mx-4 overflow-x-auto px-4 py-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:mx-0 sm:px-0" aria-label="Choose a routine">
+      <div className="flex w-max min-w-full items-center gap-2 sm:w-auto">
+        {routines.map((routine) => {
+          const isActive = routine.id === currentRoutineId;
+          return (
+            <motion.div key={routine.id} className="shrink-0" whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="ghost"
+                onClick={() => onRoutineChange(routine.id)}
+                aria-current={isActive ? 'page' : undefined}
+                className={cn(
+                  'h-12 gap-2 rounded-full border px-4 text-sm font-medium transition-colors',
+                  isActive
+                    ? 'border-primary/20 bg-primary text-primary-foreground hover:bg-primary/90'
+                    : 'border-border/70 bg-background/70 text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground'
+                )}
+              >
+                <span className="text-lg" aria-hidden="true">{routine.emoji}</span>
+                <span>{routine.name}</span>
+
+              </Button>
+            </motion.div>
+          );
+        })}
       </div>
-      
-      <div className="flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={goToNext}
-          disabled={routines.length <= 1}
-          className="p-2"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-        
-        {/* Settings button removed for now */}
-      </div>
-      
-      {/* Routine dots indicator */}
-      {routines.length > 1 && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 bottom-0 flex gap-1 pb-1">
-          {routines.map((routine, index) => (
-            <button
-              key={routine.id}
-              onClick={() => onRoutineChange(routine.id)}
-              className={cn(
-                "w-2 h-2 rounded-full transition-colors",
-                index === currentIndex 
-                  ? "bg-primary" 
-                  : "bg-muted hover:bg-muted-foreground/40"
-              )}
-            />
-          ))}
-        </div>
-      )}
-    </div>
+    </nav>
   );
 };

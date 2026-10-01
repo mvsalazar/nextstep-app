@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Plus, 
@@ -22,6 +22,7 @@ import { useTasks } from '@/hooks/useTasks';
 import type { Routine } from '@/types';
 
 interface RoutineManagerProps {
+  initialRoutineId?: string;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -49,7 +50,7 @@ const ROUTINE_EMOJIS = [
   '🌟', '⭐', '🎨', '🎵', '🚿', '🧼', '👶', '🎪'
 ];
 
-export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
+export const RoutineManager = ({ isOpen, onClose, initialRoutineId }: RoutineManagerProps) => {
   const [editingRoutine, setEditingRoutine] = useState<Routine | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState<RoutineFormData>({
@@ -63,6 +64,14 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
   const { data: settings } = useSettings();
   const { currentDate } = useCurrentDate();
   const { data: allTasks = [] } = useTasks(undefined, currentDate);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const routine = routines.find(r => r.id === initialRoutineId);
+    setEditingRoutine(routine || null);
+    setIsCreating(false);
+    if (routine) setFormData({ name: routine.name, emoji: routine.emoji, color: routine.color || '#fbbf24', active: routine.active });
+  }, [isOpen, initialRoutineId, routines]);
 
   const handleCreateNew = () => {
     setIsCreating(true);
@@ -241,7 +250,7 @@ export const RoutineManager = ({ isOpen, onClose }: RoutineManagerProps) => {
                   animate={{ opacity: 1, y: 0 }}
                   className="group"
                 >
-                  <Card className="p-4 hover:shadow-md transition-shadow">
+                  <Card className="p-4 transition-colors hover:bg-muted/40">
                     <div className="flex items-center gap-4">
                       <div className="cursor-grab">
                         <GripVertical className="h-5 w-5 text-muted-foreground" />

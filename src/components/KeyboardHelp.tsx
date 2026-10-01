@@ -46,7 +46,7 @@ export const KeyboardHelp = () => {
             ))}
           </div>
           
-          <div className="mt-6 p-3 bg-primary/5 rounded-lg">
+          <div className="mt-6 rounded-md bg-primary/5 p-3">
             <p className="text-xs text-primary">
               <strong>Tip:</strong> Keyboard shortcuts work when you're not typing in a text field.
             </p>

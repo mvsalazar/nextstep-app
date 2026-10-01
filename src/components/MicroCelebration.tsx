@@ -29,7 +29,6 @@ export const MicroCelebration = () => {
             animate={{ scale: 1.2, rotate: 0, opacity: 1 }}
             exit={{ scale: 0.8, opacity: 0 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="drop-shadow-[0_6px_12px_rgba(0,0,0,0.35)]"
             aria-hidden
           >
             <span className="text-7xl md:text-8xl select-none">{microEmoji}</span>
@@ -39,4 +38,3 @@ export const MicroCelebration = () => {
     </AnimatePresence>
   );
 };
-

@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Star, Settings, Shield } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,7 @@ import { cn } from '@/lib/utils';
 import nextstepLogo from '@/assets/next_step_logo.png';
 import { HeaderMenu } from '@/components/HeaderMenu';
 
-export const HeaderBar = () => {
+export const HeaderBar = ({ children }: { children?: ReactNode }) => {
   const { data: settings } = useSettings();
   const isChildMode = settings?.mode === 'child';
   const { data: stars = 0 } = useStars({ enabled: isChildMode });
@@ -19,9 +20,9 @@ export const HeaderBar = () => {
   const canAccessAdmin = settings?.userRole === 'parent' || settings?.userRole === 'guardian'; // Parents/guardians can access admin
 
   return (
-    <div className="sticky top-0 z-10 bg-card border-b border-border">
-      <header className="px-4 py-3">
-        <div className="max-w-md mx-auto flex items-center justify-between">
+    <div className="sticky top-0 z-30 border-b border-border/70 bg-background/85 backdrop-blur-xl">
+      <header className="px-4 py-3 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4">
           <div className="flex items-center">
             <button
               onClick={() => {
@@ -34,11 +35,12 @@ export const HeaderBar = () => {
               <img 
                 src={nextstepLogo} 
                 alt="NextStep Logo" 
-                className="h-10 w-auto hover:opacity-90 transition-opacity"
+                className="h-9 w-auto transition-opacity hover:opacity-90 sm:h-10"
               />
             </button>
           </div>
 
+        <div className="order-last min-w-0 w-full xl:order-none xl:w-auto xl:flex-1 xl:px-8">{children}</div>
         <div className="flex items-center gap-2">
           {/* Child Switcher */}
           {isChildMode && (
@@ -65,7 +67,7 @@ export const HeaderBar = () => {
                   )} 
                   fill="currentColor" 
                 />
-                <span className="font-semibold tabular-nums">{stars}</span>
+                <span className="font-semibold tabular-nums">{stars} points</span>
               </motion.button>
             </>
           )}

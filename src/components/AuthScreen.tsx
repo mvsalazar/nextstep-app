@@ -23,7 +23,7 @@ export const AuthScreen = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-sm border rounded-lg p-6 shadow-sm bg-background">
+      <div className="w-full max-w-sm rounded-md border border-border bg-background p-6">
         <h1 className="text-xl font-semibold mb-1">{mode === 'login' ? 'Sign In' : 'Create Account'}</h1>
         <p className="text-sm text-muted-foreground mb-6">Parent/guardian account</p>
         <form className="space-y-4" onSubmit={onSubmit}>

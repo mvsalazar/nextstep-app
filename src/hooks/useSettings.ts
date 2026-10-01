@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useViewedDate } from './useViewedDate';
 import type { Settings } from '@/types';
-import { TODAY, STORAGE_KEY, DEFAULT_SETTINGS } from '@/lib/constants';
+import { STORAGE_KEY } from '@/lib/constants';
 
 // Import adapters
 import * as localSettings from '@/adapters/local/settings';
@@ -30,21 +31,7 @@ export const useSettings = () => {
     queryFn: adapter.getSettings,
     // Ensure the displayed storageMode matches the active adapter selection,
     // even if the remote settings disagree (e.g., MSW defaults).
-    select: (s) => {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        const mirror = raw ? JSON.parse(raw) : {};
-        const mirroredDate = mirror?.settings?.currentDate;
-        return {
-          ...s,
-          storageMode,
-          currentDate: s.currentDate || mirroredDate || TODAY,
-        } as Settings;
-      } catch (error) {
-        console.warn('Failed to mirror settings from localStorage:', error);
-        return { ...s, storageMode } as Settings;
-      }
-    },
+    select: (s) => ({ ...s, storageMode }),
     staleTime: 1000 * 60 * 10, // 10 minutes
   });
 };
@@ -99,28 +86,5 @@ export const useUpdateSettings = () => {
   });
 };
 
-export const useCurrentDate = () => {
-  const { data: settings } = useSettings();
-  const updateSettings = useUpdateSettings();
-  const queryClient = useQueryClient();
-  
-  const currentDate = settings?.currentDate || TODAY;
-  
-  const setCurrentDate = (date: string) => {
-    // Optimistically update local cache so UI responds immediately,
-    // then persist via the selected adapter.
-    const mode = settings?.storageMode || 'local';
-    queryClient.setQueryData<Settings>(['settings', mode], (prev) => {
-      const fallbackSettings: Settings = { ...DEFAULT_SETTINGS, storageMode: mode };
-      const base = prev ?? settings ?? fallbackSettings;
-      return { ...base, currentDate: date };
-    });
-    updateSettings.mutate({ currentDate: date });
-  };
-  
-  return {
-    currentDate,
-    setCurrentDate,
-    isUpdating: updateSettings.isPending,
-  };
-};
+// Viewed dates are session UI state, not persisted preferences.
+export const useCurrentDate = useViewedDate;
